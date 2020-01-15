@@ -7,13 +7,13 @@ name=eMAPS
 qgisMinimumVersion=3.0
 description=Herramienta de Evaluación a Microescala de Ambientes Peatonales
 version=0.1
-author=LlactaLab | Universidad de Cuenca
+author= @javandrex | LlactaLab | Universidad de Cuenca
 email=llactalab@gmail.com
 
 about=Proceso automático de calisficación para la Herramienta de Evaluación a Microescala de Ambientes Peatonales (eMAPS)
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/javandres/eMaps_Score_QGis_Plugin
+repository=https://github.com/javandres/eMaps_Score_QGis_Plugin
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=yes
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/javandres/eMaps_Score_QGis_Plugin
 category=Analysis
 icon=icon.png
 # experimental flag
