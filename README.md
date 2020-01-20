@@ -3,10 +3,6 @@
 e-MAPS.ec es una Herramienta de Evaluación a Microescala de Ambientes Peatonales basado en la herramienta MAPS (Sallis, 2017)
 
 eMAPS Score QGIS Plugin permite calcular score de caminabilidad desde QGIS.
-  - Type some Markdown on the left
-  - See HTML in the right
-  - Magic
-
 
 ### Installation
 

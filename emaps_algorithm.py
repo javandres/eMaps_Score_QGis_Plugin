@@ -59,16 +59,7 @@ from .emaps_db_model import EmapsDbModel
 
 class EmapsAlgorithm(QgsProcessingAlgorithm):
     """
-    This is an example algorithm that takes a vector layer and
-    creates a new identical one.
-
-    It is meant to be used as an example of how to create your own
-    algorithms and explain methods and variables used to do it. An
-    algorithm like this will be available in all elements, and there
-    is not need for additional work.
-
-    All Processing algorithms should extend the QgsProcessingAlgorithm
-    class.
+    eMAPS Score Algorithm
     """
 
     # Constants used to refer to parameters and outputs. They will be
@@ -122,58 +113,50 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.AREAS_GEOM,
-                self.tr('🗺 Evaluation Areas layer (Points dataset with the geometry of the evaluated areas)'),
+                self.tr('🗺 Areas evaluation layer \n(dataset with the geometry of the evaluated areas)'),
                 [QgsProcessing.TypeVector ]
             )
         )
 
-        # We add the input vector features source. It muste be a line
-        # geometry.
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.SEGMENTS_GEOM,
-                self.tr('🗺 Segments layer (Line dataset with the geometry of the evaluated street segments)'),
+                self.tr('🗺 Segments evaluation layer \n(Line dataset with the geometry of the evaluated street segments)'),
                 [QgsProcessing.TypeVectorLine ]
             )
         )
 
-        # “segmentos” table downloaded from the KoboToolbox plaform for the corresponding version 
-        # with the option: “xml values”. This is a .csv file.
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.SEGMENTS_EVAL,
-                description=self.tr('📋 Segments Evaluation (csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                description=self.tr('📋 Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
                 extension="csv",
-                optional=True,
+                optional=False,
             )
         )
 
-        # “lotes” table downloaded from the KoboToolbox plaform for the corresponding version 
-        # with the option: “xml values”. This is a .csv file.
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.PARCELS_EVAL,
-                description=self.tr('📋 Parcels Evaluation (csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                description=self.tr('📋 Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
                 extension="csv",
-                optional=True,
+                optional=False,
             )
         )
 
-        # “diccionario” A data dictionary table which maps the question and answer labels and values.
-        # This is a .csv file. 
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.DICTIONARY,
-                description=self.tr('📄 eMAPS Config File (CSV file with a data dictionary which maps the question and answer labels and values)'),
+                description=self.tr('📄 eMAPS Specification File \n(CSV file with a data dictionary which maps the question and answer labels and values)'),
                 extension="csv",
-                optional=True,
+                optional=False,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.GPARAMS,
-                description=self.tr('📄 eMAPS General Config File (CSV file with general parammeters)'),
+                description=self.tr('📄 eMAPS General Params File \n(CSV file with general parammeters)'),
                 extension="csv",
                 optional=True,
             )
@@ -182,28 +165,28 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT_SEGMENTS_SCORE,
-                self.tr('Segment eMAPS-Score')
+                self.tr('OUTPUT: Segment eMAPS-Score')
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT_SEGMENTS_SCORE_PROPORTION,
-                self.tr('Segment eMAPS-Score Proportion')
+                self.tr('OUTPUT: Segment eMAPS-Score Proportion')
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT_AREAS_SCORE,
-                self.tr('Areas eMAPS-Score')
+                self.tr('OUTPUT: Areas eMAPS-Score')
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT_AREAS_SCORE_PROPORTION,
-                self.tr('Areas eMAPS-Score Proportion')
+                self.tr('OUTPUT: Areas eMAPS-Score Proportion')
             )
         )
 
@@ -342,6 +325,9 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
                }
 
     def postProcessAlgorithm(self, context, feedback):
+        '''
+            Here we can apply styles
+        '''
         cmd_folder = os.path.split(inspect.getfile(inspect.currentframe()))[0]
 
         segments_score_prop_layer = QgsProcessingUtils.mapLayerFromString(self.dest_segments_score_prop, context)
@@ -378,6 +364,9 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
                }
 
     def join_layer_list(self, layer, layer_attribute, sql_list, list_attribute, output, parameters, context, feedback):
+        '''
+            Join layer with sql fetch result by attributes
+        '''
         total = 100.0 / layer.featureCount() if layer.featureCount() else 0
         fieldnames = [field.name() for field in layer.fields()]
         features = layer.getFeatures()
