@@ -120,13 +120,10 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             )
         )
 
-
     def processAlgorithm(self, parameters, context, feedback):
         """
-        Here is where the processing itself takes place.
+        Here is where the pre processing itself takes place.
         """
-
-
         t = time.time()
         feedback.pushInfo("⚙ Cargando capa de áreas de estudio 🗺...")
         areas_geom = self.parameterAsSource(parameters, self.AREAS_GEOM, context)
@@ -136,7 +133,7 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
         fieldnames = [field.name() for field in areas_geom.fields()]
         lista_areas = []
         (sink, self.dest_areas) = self.parameterAsSink(parameters, self.OUTPUT_AREAS, context, areas_geom.fields(),
-                                               areas_geom.wkbType(), areas_geom.sourceCrs()) 
+                                               areas_geom.wkbType(), areas_geom.sourceCrs())
         for current, feature in enumerate(features):
             if feedback.isCanceled():
                 break
@@ -146,22 +143,14 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             lista_areas_dict = dict(zip(fieldnames, attributes_replaced_null ))
             lista_areas.append(lista_areas_dict)
             sink.addFeature(feature, QgsFeatureSink.FastInsert)
-           
         feedback.pushInfo("✔ Areas de estudio cargadas: "+str(len(lista_areas)))
-
-
             
         feedback.pushInfo("⚙ Cargando capa de segmentos de calle 🗺...")
-        #segments_geom = self.parameterAsSource(parameters, self.SEGMENTS_GEOM, context)
         segments_geom = self.parameterAsVectorLayer(parameters, self.SEGMENTS_GEOM, context)
-
         raster_layer = self.parameterAsRasterLayer(parameters, "raster", context)
-        
         result_z_value = processing.run("native:setzfromraster", {'BAND' : 1, 'INPUT' : segments_geom, 'NODATA' : 0, 'OUTPUT' : 'TEMPORARY_OUTPUT', 'RASTER' : raster_layer, 'SCALE' : 1})
 
         result_z_stats = processing.run("native:extractzvalues", { 'COLUMN_PREFIX' : 'z_', 'INPUT' : result_z_value["OUTPUT"], 'OUTPUT' : 'TEMPORARY_OUTPUT', 'SUMMARIES' : [0,1,2] })["OUTPUT"]
-        
-
         result_z_stats.dataProvider().addAttributes([QgsField("emaps_len", QVariant.Double)])
         result_z_stats.dataProvider().addAttributes([QgsField("emaps_slo", QVariant.Double)])
         result_z_stats.updateFields()
@@ -170,7 +159,6 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
         total = 100.0 / result_z_stats.featureCount() if result_z_stats.featureCount() else 0
         (sink, self.dest_segmentos) = self.parameterAsSink(parameters, self.OUTPUT_SEGMENTS, context, result_z_stats.fields(),
                                         result_z_stats.wkbType(), result_z_stats.sourceCrs()) 
-
         for feature in result_z_stats.getFeatures():
             if feedback.isCanceled():
                 break
@@ -179,91 +167,16 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             feature.setFields(result_z_stats.fields())
             feature.setAttributes(attributes)
             emaps_length = round(geom.length(), 3)
-            emaps_slope = round (  abs( feature["z_first"] - feature["z_last"] ) / emaps_length , 3)
-            feature.setAttribute('emaps_len', emaps_length )
+            emaps_slope = round (abs(feature["z_first"] - feature["z_last"]) / emaps_length, 3)
+            feature.setAttribute('emaps_len', emaps_length)
             feature.setAttribute('emaps_slo', emaps_slope)
             result_z_stats.updateFeature(feature)
             sink.addFeature(feature, QgsFeatureSink.FastInsert)
-            
         result_z_stats.commitChanges()
-
-
-        # segment_init_point = processing.run("qgis:extractspecificvertices", {"INPUT": segments_geom, "VERTICES":0, "OUTPUT":"init_point" })["OUTPUT"]
-        # segment_final_point = processing.run("qgis:extractspecificvertices", {"INPUT": segments_geom, "VERTICES":-1, "OUTPUT":"final_point" })["OUTPUT"]
-
-        # segment_init_layer = QgsProcessingUtils.mapLayerFromString(segment_init_point, context)
-        # segment_final_layer = QgsProcessingUtils.mapLayerFromString(segment_final_point, context)
-
-        # segment_init_point = processing.run('qgis:assignprojection', { "INPUT": segment_init_layer, "CRS":segments_geom.sourceCrs(), "OUTPUT": "memory3"})["OUTPUT"]
-        # segment_final_point = processing.run('qgis:assignprojection', { "INPUT": segment_final_layer, "CRS":segments_geom.sourceCrs(), "OUTPUT": "memory4"})["OUTPUT"]
-
-        # segment_init_layer = QgsProcessingUtils.mapLayerFromString(segment_init_point, context)
-        # segment_final_layer = QgsProcessingUtils.mapLayerFromString(segment_final_point, context)
-
-        # segment_init_point = processing.run('qgis:reprojectlayer', {"INPUT": segment_init_layer, 'TARGET_CRS': QgsCoordinateReferenceSystem('EPSG:4326'), "OUTPUT": "memory5"})["OUTPUT"]
-        # segment_final_point = processing.run('qgis:reprojectlayer', {"INPUT": segment_final_point, 'TARGET_CRS': QgsCoordinateReferenceSystem('EPSG:4326'), "OUTPUT": "memory6"})["OUTPUT"]
-
-        # segment_init_layer_4326 = QgsProcessingUtils.mapLayerFromString(segment_init_point, context)
-        # segment_final_layer_4326 = QgsProcessingUtils.mapLayerFromString(segment_final_point, context)
-
-        # total = 100.0 / segments_geom.featureCount() if segments_geom.featureCount() else 0
-        # features = segments_geom.getFeatures()
-        # fieldnames = [field.name() for field in segments_geom.fields()]
-        # lista_segmentos = []
-        # (sink, self.dest_segmentos) = self.parameterAsSink(parameters, self.OUTPUT_SEGMENTS, context, segments_geom.fields(),
-        #                                        segments_geom.wkbType(), segments_geom.sourceCrs()) 
-        # for current, feature in enumerate(features):
-        #     #self.get_vertices_list(segments_geom, feature)
-        #     if feedback.isCanceled():
-        #         break
-        #     attributes = feature.attributes()
-        #     attributes_replaced_null = [None if a == qgis.core.NULL else a for a in attributes]
-        #     feedback.setProgress(int(current * total))
-        #     lista_segmentos_dict = dict(zip(fieldnames, attributes_replaced_null ))
-        #     lista_segmentos.append(lista_segmentos_dict)
-        #     sink.addFeature(feature, QgsFeatureSink.FastInsert)
-        # feedback.pushInfo("✔ Segmentos de calle cargados: "+str(len(lista_segmentos)))
-        
-
-        print("Time:", (time.time()-t))
         return {
                   self.OUTPUT_SEGMENTS: self.OUTPUT_SEGMENTS, 
                   self.OUTPUT_AREAS: self.dest_areas
                }
-
-    def get_vertices_list(self, layer, feature):
-        polilines = []
-        if feature.geometry().isMultipart(): # new part for multipolylines
-            multipolilines = feature.geometry().asMultiPolyline()
-            for m in multipolilines:
-                polilines.append(m)
-            #print [len(v) for v in vertices]
-        else:
-            polilines = feature.geometry().asPolyline()
-        
-        init_point = polilines[0][0]
-        final_point = polilines[0][len(polilines[0]) -1 ]
-        for p in polilines:
-            print(p)
-
-        # vertices = feature.geometry().asPolyline()
-        # points = []
-
-        # for v in vertices:
-        #     points.append(v)
-        # return points    
-
-
-    def get_geographic_xypoint(self, layer, xy_point, context):
-        crsSrc = layer.sourceCrs()
-        crsDest = QgsCoordinateReferenceSystem(4326)
-        xform = QgsCoordinateTransform()
-        xform.setDestinationCrs(crsDest)
-        xform.setSourceCrs(crsSrc)
-        pt = xform.transform(xy_point)
-        return pt
-
-        
 
     def postProcessAlgorithm(self, context, feedback):
         '''
