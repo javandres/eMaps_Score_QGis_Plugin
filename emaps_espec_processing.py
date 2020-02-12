@@ -32,6 +32,7 @@ import os
 import csv
 import re
 from .constants import *
+import yaml
 
 class EmapsEspecificationProcessing():
     """
@@ -151,9 +152,9 @@ class EmapsEspecificationProcessing():
                         match = re.search(r'((\(?\"?)(\*)(\"?\)?))=-?\d+$', question)
                         exp = match.group(3)
                         res_exp.update({"*": exp})
-                matchValue = re.search(r'=(-?\d+)$', question)    
+                matchValue = re.search(r'=(-?\d+)$', question)
                 value = matchValue.group(1)
-                res_exp.update({"value":value})        
+                res_exp.update({"value":value})
             else: 
                 raise Exception('Error in numeric expression format: {}'.format(question))
             dict_res = {
