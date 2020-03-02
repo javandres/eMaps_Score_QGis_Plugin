@@ -36,6 +36,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsProcessingProvider
 from .emaps_algorithm import EmapsAlgorithm
 from .emaps_pre_algorithm import EmapsPreprocessingAlgorithm
+from .emaps_download_algorithm import EmapsDownloadAlgorithm
 
 
 class EmapsProvider(QgsProcessingProvider):
@@ -59,6 +60,7 @@ class EmapsProvider(QgsProcessingProvider):
         """
         self.addAlgorithm(EmapsAlgorithm())
         self.addAlgorithm(EmapsPreprocessingAlgorithm())
+        self.addAlgorithm(EmapsDownloadAlgorithm())
         # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())
 
