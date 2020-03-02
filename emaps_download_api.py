@@ -44,6 +44,7 @@ class EmapsDownloadApi():
         self.kobo_password = kobo_password
         self.feedback = feedback
         self.parcel_index = 0
+        self.res_parcels_columns = []
 
     def get_form_data(self, params):
         print(params)
@@ -63,7 +64,7 @@ class EmapsDownloadApi():
         #     r.raise_for_status()
         # except requests.exceptions.HTTPError as e:
         #     print (e.response.text)
-
+        r.encoding = 'UTF-8'
         data = json.loads(r.text)
         res_data = self.process_segments(data["results"])
         return res_data
@@ -72,6 +73,8 @@ class EmapsDownloadApi():
         index = 0
         res_segment_data = []
         res_parcels_data = []
+        res_segments_columns = []
+        
         for row in results:
             index = index+1
             keys = row.keys()
@@ -95,6 +98,7 @@ class EmapsDownloadApi():
                             quest_meta["photo_"+str(at_cont)] = photo["download_large_url"]
                     else:
                         quest_meta[key.lower()] = row[key]
+            
             quest_emaps_ordered = {}
             quest_meta_ordered = {}
             for i in sorted(quest_emaps.keys()):
@@ -103,11 +107,14 @@ class EmapsDownloadApi():
                 quest_meta_ordered["_index"] = index
                 quest_meta_ordered[i] = quest_meta[i]
             quest_meta_ordered.update(quest_emaps_ordered)
+            res_segments_columns = list(set(res_segments_columns) | set(list(quest_meta_ordered.keys())))
             res_segment_data.append(quest_meta_ordered)
-            return {
-                "segments_data": res_segment_data,
-                "parcels_data": res_parcels_data
-            }
+        return {
+            "segments_data": res_segment_data,
+            "parcels_data": res_parcels_data,
+            "segments_columns": sorted(res_segments_columns),
+            "parcels_columns": sorted(self.res_parcels_columns)
+        }
 
     def process_parcels(self, segment_index, parcels_list):
         res_parcels_list = []
@@ -122,10 +129,12 @@ class EmapsDownloadApi():
                     quest_parcels[value.lower()] = row[key]
                 else:
                     quest_parcels[key.lower()] = row[key]
+            
             quest_parcels_ordered = {}
             quest_parcels_ordered["_index"] = self.parcel_index
             quest_parcels_ordered["_parent_index"] = segment_index
             for i in sorted(quest_parcels.keys()):
                 quest_parcels_ordered[i] = quest_parcels[i]
             res_parcels_list.append(quest_parcels_ordered)    
+            self.res_parcels_columns = list(set(self.res_parcels_columns) | set(list(quest_parcels_ordered.keys())))        
         return res_parcels_list

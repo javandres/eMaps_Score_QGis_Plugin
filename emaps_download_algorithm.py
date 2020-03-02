@@ -138,7 +138,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_NOMBRE_USUARIO,
-                self.tr('🔍 Nombre de usuario evaluador (opcional)')
+                self.tr('🔍 Nombre de usuario evaluador (opcional)'),
+                optional=True
             )
         )
 
@@ -146,7 +147,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterFileDestination(
                 self.OUTPUT_SEGMENTS,
                 self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
-                'CSV files (*.csv)'
+                'CSV files (*.csv)',
+                optional=True
             )
         )
 
@@ -165,7 +167,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         Here is where the pre processing itself takes place.
         """
         t = time.time()
-        feedback.pushInfo("⚙ Conectando con servidor KoboToolBox 🌐💾...")
+        
 
         kpi_url = self.parameterAsString(parameters, self.INPUT_KPI_LINK, context)
         kobo_user = self.parameterAsString(parameters, self.INPUT_USER, context)
@@ -180,17 +182,20 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             "nombre_usuario": kobo_nombre_usuario
         }
         kobo_api = EmapsDownloadApi(feedback, kpi_url, kobo_user, kobo_password)
-
-        data = kobo_api.get_form_data(params)
-        print(data)
+        feedback.pushInfo("⚙ Conectando con servidor KoboToolBox 🌐")
+        feedback.pushInfo("⚙ Descargando datos...")
+        api_data = kobo_api.get_form_data(params)
+        
+        
 
         segments_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_SEGMENTS, context)
         parcels_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_PARCELS, context)
 
-        segments_data = data["segments_data"]
-        parcels_data = data["parcels_data"]
+        segments_data = api_data["segments_data"]
+        parcels_data = api_data["parcels_data"]
 
-        csv_columns = sorted(segments_data[0].keys())
+        feedback.pushInfo("⚙ Guardando arvhivo SEGMENTOS (.CSV)  💾...")
+        csv_columns = api_data["segments_columns"]
         print(csv_columns)
         csv_file = segments_csv
         try:
@@ -202,8 +207,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         except IOError:
             print("I/O error")
             
-            
-        csv_columns = sorted(parcels_data[0].keys())
+        feedback.pushInfo("⚙ Guardando arvhivo LOTES (.CSV)  💾...")
+        csv_columns = api_data["parcels_columns"]
         print(csv_columns)
         csv_file = parcels_csv
         try:
