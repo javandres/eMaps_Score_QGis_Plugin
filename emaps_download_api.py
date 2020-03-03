@@ -49,25 +49,37 @@ class EmapsDownloadApi():
     def get_form_data(self, params):
         print(params)
         url = self.kobo_url + 'api/v2/assets/'+params["form_id"]+'/data.json'
-        #query={"metadatos_ini/m_002":"cepra_res_2020_cues"}   
-        #ata.json?query={%22metadatos_ini/m_002%22:%22cepra_res_2020_cues%22} 
-        query_cod_estudio={}
-        query_nombre_usuario={}
+        query_params_list = []
         if params["cod_estudio"]:
-            query_cod_estudio["metadatos_ini/m_002"]=params["cod_estudio"]
-            query_cod_estudio = str(query_cod_estudio).replace("'",'"')
+            query_params_list.append({"metadatos_ini/m_002":params["cod_estudio"]})
         if params["nombre_usuario"]:
-            query_nombre_usuario["metadatos_ini/m_001"]=params["nombre_usuario"]    
-            query_nombre_usuario = str(query_nombre_usuario).replace("'",'"')
-        if query_cod_estudio and query_nombre_usuario:
-            url = url + '?query={"$and":['+query_cod_estudio+','+query_nombre_usuario+']}'
-        elif query_cod_estudio:
-            url = url + "?query="+query_cod_estudio
-        elif query_nombre_usuario:
-            url = url + "?query="+query_nombre_usuario        
-
-        #?query={"$and": [ {"$gte": "2019-05-28"},{"$lt": "2019-05-29"} ] }
-
+            query_params_list.append({"metadatos_ini/m_001":params["nombre_usuario"]})
+        if params["tipo_levantamiento"]:
+            value = ""
+            if params["tipo_levantamiento"] == "Evaluación":
+                value = "a"
+            elif params["tipo_levantamiento"] == "Validación":
+                value = "b"
+            elif params["tipo_levantamiento"] == "Entrenamiento":
+                value = "c"
+            query_params_list.append({"metadatos_ini/m_003":value})
+        query = ""
+        if len(query_params_list) >= 2:
+            query = '?query={"$and":['
+            cont = 0
+            for q in query_params_list:
+                if cont > 0:
+                    query = query + ","
+                query = query + str(q).replace("'", '"')
+                cont = cont + 1
+                
+            query = query + ']}'
+        else:    
+            query = query + "?query="+str(query_params_list[0]).replace("'", '"')
+   
+        url = url + query
+        print(url)
+        self.feedback.pushInfo("⚙ URL QUERY: "+ url)
         try:
             r = requests.get(url, auth=(self.kobo_user, self.kobo_password))
             r.raise_for_status()
@@ -79,13 +91,11 @@ class EmapsDownloadApi():
             raise Exception(errc )
         except requests.exceptions.Timeout as errt:
             raise Exception(errt)  
-        # try:
-        #     r.raise_for_status()
-        # except requests.exceptions.HTTPError as e:
-        #     print (e.response.text)
+
         r.encoding = 'UTF-8'
         data = json.loads(r.text)
         if data["results"]:
+            self.feedback.pushInfo("⚙ Se han encontrado: "+ str(len(data["results"])) + " registros")
             res_data = self.process_segments(data["results"])
             return res_data
         else:

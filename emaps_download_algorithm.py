@@ -52,6 +52,7 @@ from qgis.core import (QgsField,
                        QgsProcessingParameterString,
                        QgsProcessingParameterAuthConfig,
                        QgsProcessingFeedback,
+                       QgsProcessingParameterEnum,
                        QgsProcessingParameterRasterLayer,
                        QgsProcessingParameterFileDestination,
                        QgsMessageLog,
@@ -84,10 +85,13 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
     INPUT_FORM_ID = 'INPUT_FORM_ID'
     INPUT_COD_ESTUDIO = 'INPUT_COD_ESTUDIO'
     INPUT_NOMBRE_USUARIO = 'INPUT_NOMBRE_USUARIO'
+    INPUT_TIPO_LEVANTAMIENTO = 'TIPO_LEVANTAMIENTO'
     
-
     dest_segments = None
     dest_areas = None
+    tipos_levantamiento = ["Evaluación", "Validación", "Entrenamiento"]
+
+
 
     def initAlgorithm(self, config):
         """
@@ -102,7 +106,6 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 defaultValue='https://kf.kobotoolbox.org/'
             )
         )
-
          
         self.addParameter(
             QgsProcessingParameterString(
@@ -124,14 +127,14 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_FORM_ID,
                 self.tr('🆔 Código del Formulario'),
-                defaultValue=''
+                defaultValue='acqYb67ZLjbQnKXt9HdSn5'
             )
         )
 
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_COD_ESTUDIO,
-                self.tr('🔍 Código del Estudio (opcional)'),
+                self.tr('🔍 Código del Estudio'),
                 optional=True
             )
         )
@@ -139,7 +142,18 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_NOMBRE_USUARIO,
-                self.tr('🔍 Nombre de usuario evaluador (opcional)'),
+                self.tr('🔍 Nombre de usuario evaluador'),
+                optional=True
+            )
+        )
+
+        
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                self.INPUT_TIPO_LEVANTAMIENTO,
+                "🔍 Tipo de Levantamiento",
+                self.tipos_levantamiento,
+                defaultValue=self.tipos_levantamiento[0],
                 optional=True
             )
         )
@@ -160,34 +174,31 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 'CSV files (*.csv)'
             )
         )
-       
-       
 
     def processAlgorithm(self, parameters, context, feedback):
         """
         Here is where the pre processing itself takes place.
         """
         t = time.time()
-        
-
         kpi_url = self.parameterAsString(parameters, self.INPUT_KPI_LINK, context)
         kobo_user = self.parameterAsString(parameters, self.INPUT_USER, context)
         kobo_password = self.parameterAsString(parameters, self.INPUT_PASSWORD, context)
         kobo_form_id = self.parameterAsString(parameters, self.INPUT_FORM_ID, context)
         kobo_cod_estudio = self.parameterAsString(parameters, self.INPUT_COD_ESTUDIO, context)
         kobo_nombre_usuario = self.parameterAsString(parameters, self.INPUT_NOMBRE_USUARIO, context)
+        kobo_tipo_levantamiento = self.tipos_levantamiento[self.parameterAsEnum(parameters, self.INPUT_TIPO_LEVANTAMIENTO, context)]
 
+        print("TIPOLEV:", kobo_tipo_levantamiento, type(kobo_tipo_levantamiento))
         params = {
             "form_id": kobo_form_id,
             "cod_estudio": kobo_cod_estudio,
             "nombre_usuario": kobo_nombre_usuario
+            , "tipo_levantamiento": kobo_tipo_levantamiento
         }
         kobo_api = EmapsDownloadApi(feedback, kpi_url, kobo_user, kobo_password)
         feedback.pushInfo("⚙ Conectando con servidor KoboToolBox 🌐")
         feedback.pushInfo("⚙ Descargando datos...")
         api_data = kobo_api.get_form_data(params)
-        
-        
 
         segments_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_SEGMENTS, context)
         parcels_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_PARCELS, context)
@@ -219,8 +230,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 for data in parcels_data:
                     writer.writerow(data)
         except IOError:
-            print("I/O error")    
-
+            print("I/O error")
 
         return {
                   self.OUTPUT_SEGMENTS: segments_csv, 
