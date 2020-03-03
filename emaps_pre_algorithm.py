@@ -157,7 +157,7 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
         result_z_stats.startEditing()
 
         total = 100.0 / result_z_stats.featureCount() if result_z_stats.featureCount() else 0
-        (sink, self.dest_segmentos) = self.parameterAsSink(parameters, self.OUTPUT_SEGMENTS, context, result_z_stats.fields(),
+        (sink, self.dest_segments) = self.parameterAsSink(parameters, self.OUTPUT_SEGMENTS, context, result_z_stats.fields(),
                                         result_z_stats.wkbType(), result_z_stats.sourceCrs()) 
         for feature in result_z_stats.getFeatures():
             if feedback.isCanceled():
@@ -174,7 +174,7 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             sink.addFeature(feature, QgsFeatureSink.FastInsert)
         result_z_stats.commitChanges()
         return {
-                  self.OUTPUT_SEGMENTS: self.OUTPUT_SEGMENTS, 
+                  self.OUTPUT_SEGMENTS: self.dest_segments, 
                   self.OUTPUT_AREAS: self.dest_areas
                }
 
