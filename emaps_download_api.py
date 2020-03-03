@@ -49,6 +49,25 @@ class EmapsDownloadApi():
     def get_form_data(self, params):
         print(params)
         url = self.kobo_url + 'api/v2/assets/'+params["form_id"]+'/data.json'
+        #query={"metadatos_ini/m_002":"cepra_res_2020_cues"}   
+        #ata.json?query={%22metadatos_ini/m_002%22:%22cepra_res_2020_cues%22} 
+        query_cod_estudio={}
+        query_nombre_usuario={}
+        if params["cod_estudio"]:
+            query_cod_estudio["metadatos_ini/m_002"]=params["cod_estudio"]
+            query_cod_estudio = str(query_cod_estudio).replace("'",'"')
+        if params["nombre_usuario"]:
+            query_nombre_usuario["metadatos_ini/m_001"]=params["nombre_usuario"]    
+            query_nombre_usuario = str(query_nombre_usuario).replace("'",'"')
+        if query_cod_estudio and query_nombre_usuario:
+            url = url + '?query={"$and":['+query_cod_estudio+','+query_nombre_usuario+']}'
+        elif query_cod_estudio:
+            url = url + "?query="+query_cod_estudio
+        elif query_nombre_usuario:
+            url = url + "?query="+query_nombre_usuario        
+
+        #?query={"$and": [ {"$gte": "2019-05-28"},{"$lt": "2019-05-29"} ] }
+
         try:
             r = requests.get(url, auth=(self.kobo_user, self.kobo_password))
             r.raise_for_status()
@@ -66,8 +85,12 @@ class EmapsDownloadApi():
         #     print (e.response.text)
         r.encoding = 'UTF-8'
         data = json.loads(r.text)
-        res_data = self.process_segments(data["results"])
-        return res_data
+        if data["results"]:
+            res_data = self.process_segments(data["results"])
+            return res_data
+        else:
+            raise Exception("No se encontraron registros para los parámetros ingresados!")      
+        
 
     def process_segments(self, results):
         index = 0

@@ -108,7 +108,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_USER,
                 self.tr('👤 Usuario KoboToolBox'),
-                defaultValue='maps'
+                defaultValue=''
             )
         )
 
@@ -116,7 +116,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_PASSWORD,
                 self.tr('🔑 Contraseña KoboToolBox'),
-                defaultValue='maps_2018'
+                defaultValue=''
             )
         )
 
@@ -124,14 +124,15 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_FORM_ID,
                 self.tr('🆔 Código del Formulario'),
-                defaultValue='acqYb67ZLjbQnKXt9HdSn5'
+                defaultValue=''
             )
         )
 
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_COD_ESTUDIO,
-                self.tr('🔍 Código del Estudio (opcional)')
+                self.tr('🔍 Código del Estudio (opcional)'),
+                optional=True
             )
         )
 
@@ -148,7 +149,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 self.OUTPUT_SEGMENTS,
                 self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
                 'CSV files (*.csv)',
-                optional=True
+                
             )
         )
 
