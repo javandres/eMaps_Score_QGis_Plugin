@@ -87,22 +87,22 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.AREAS_GEOM,
-                self.tr('🗺 Areas evaluation layer \n(dataset with the geometry of the evaluated areas)'),
-                [QgsProcessing.TypeVector ]
+                self.tr('Areas evaluation layer \n(dataset with the geometry of the evaluated areas)'),
+                [QgsProcessing.TypeVector]
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.SEGMENTS_GEOM,
-                self.tr('🗺 Segments evaluation layer \n(Line dataset with the geometry of the evaluated street segments)'),
-                [QgsProcessing.TypeVectorLine ]
+                self.tr('Segments evaluation layer \n(Line dataset with the geometry of the evaluated street segments)'),
+                [QgsProcessing.TypeVectorLine]
             )
         )
 
         self.addParameter(QgsProcessingParameterRasterLayer(
-            'raster', 
-            'Ráster DEM file', 
+            'raster',
+            'Ráster DEM file',
             defaultValue=None)
         )
 
@@ -125,7 +125,7 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
         Here is where the pre processing itself takes place.
         """
         t = time.time()
-        feedback.pushInfo("⚙ Cargando capa de áreas de estudio 🗺...")
+        feedback.pushInfo("Cargando capa de áreas de estudio...")
         areas_geom = self.parameterAsSource(parameters, self.AREAS_GEOM, context)
 
         total = 100.0 / areas_geom.featureCount() if areas_geom.featureCount() else 0
@@ -143,9 +143,9 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             lista_areas_dict = dict(zip(fieldnames, attributes_replaced_null ))
             lista_areas.append(lista_areas_dict)
             sink.addFeature(feature, QgsFeatureSink.FastInsert)
-        feedback.pushInfo("✔ Areas de estudio cargadas: "+str(len(lista_areas)))
+        feedback.pushInfo("Areas de estudio cargadas: "+str(len(lista_areas)))
             
-        feedback.pushInfo("⚙ Cargando capa de segmentos de calle 🗺...")
+        feedback.pushInfo("Cargando capa de segmentos de calle...")
         segments_geom = self.parameterAsVectorLayer(parameters, self.SEGMENTS_GEOM, context)
         raster_layer = self.parameterAsRasterLayer(parameters, "raster", context)
         result_z_value = processing.run("native:setzfromraster", {'BAND' : 1, 'INPUT' : segments_geom, 'NODATA' : 0, 'OUTPUT' : 'TEMPORARY_OUTPUT', 'RASTER' : raster_layer, 'SCALE' : 1})
@@ -167,7 +167,7 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             feature.setFields(result_z_stats.fields())
             feature.setAttributes(attributes)
             emaps_length = round(geom.length(), 3)
-            emaps_slope = round (abs(feature["z_first"] - feature["z_last"]) / emaps_length, 3)
+            emaps_slope = round(abs(feature["z_first"] - feature["z_last"]) / emaps_length, 3)
             feature.setAttribute('emaps_len', emaps_length)
             feature.setAttribute('emaps_slo', emaps_slope)
             result_z_stats.updateFeature(feature)

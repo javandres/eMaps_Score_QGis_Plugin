@@ -119,7 +119,7 @@ class EmapsDownloadApi():
             query = query + "?query="+str(query_params_list[0]).replace("'", '"')
         url = url + query
         print(url)
-        self.feedback.pushInfo("⚙ URL QUERY: "+ url)
+        self.feedback.pushInfo("URL QUERY: "+ url)
         try:
             r = requests.get(url, auth=(self.kobo_user, self.kobo_password))
             r.raise_for_status()
@@ -134,7 +134,7 @@ class EmapsDownloadApi():
         r.encoding = 'UTF-8'
         data = json.loads(r.text)
         if data["results"]:
-            self.feedback.pushInfo("⚙ Se han encontrado: "+ str(len(data["results"])) + " registros")
+            self.feedback.pushInfo("Se han encontrado: "+ str(len(data["results"])) + " registros")
             res_data = self.process_segments(data["results"])
             return res_data
         else:

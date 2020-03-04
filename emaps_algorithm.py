@@ -113,7 +113,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.AREAS_GEOM,
-                self.tr('🗺 Areas evaluation layer \n(dataset with the geometry of the evaluated areas)'),
+                self.tr('Areas evaluation layer \n(dataset with the geometry of the evaluated areas)'),
                 [QgsProcessing.TypeVector ]
             )
         )
@@ -121,7 +121,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.SEGMENTS_GEOM,
-                self.tr('🗺 Segments evaluation layer \n(Line dataset with the geometry of the evaluated street segments)'),
+                self.tr('Segments evaluation layer \n(Line dataset with the geometry of the evaluated street segments)'),
                 [QgsProcessing.TypeVectorLine ]
             )
         )
@@ -129,7 +129,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.SEGMENTS_EVAL,
-                description=self.tr('📋 Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                description=self.tr('Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
                 extension="csv",
                 optional=False,
             )
@@ -138,7 +138,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.PARCELS_EVAL,
-                description=self.tr('📋 Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                description=self.tr('Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
                 extension="csv",
                 optional=False,
             )
@@ -147,7 +147,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.DICTIONARY,
-                description=self.tr('📄 eMAPS Specification File \n(CSV file with a data dictionary which maps the question and answer labels and values)'),
+                description=self.tr('eMAPS Specification File \n(CSV file with a data dictionary which maps the question and answer labels and values)'),
                 extension="csv",
                 optional=False,
             )
@@ -156,7 +156,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 name=self.GPARAMS,
-                description=self.tr('📄 eMAPS General Params File \n(CSV file with general parammeters)'),
+                description=self.tr('eMAPS General Params File \n(CSV file with general parammeters)'),
                 extension="csv",
                 optional=True,
             )
@@ -195,7 +195,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         Here is where the processing itself takes place.
         """
         global_params_source = self.parameterAsSource(parameters, self.GPARAMS, context)
-        feedback.pushInfo("⚙ Procesando parámetros generales...")
+        feedback.pushInfo("Procesando parámetros generales...")
         if global_params_source:
             features_global_params = global_params_source.getFeatures()
             general_params = dict()
@@ -210,18 +210,19 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
 
         feedback.pushInfo("eMaps.ec Version: "+general_params["emaps"])
         feedback.pushInfo("eMaps.ec Author: "+general_params["author"])
-        feedback.pushInfo("OK ✔")
+        feedback.pushInfo("OK")
 
         segment_id = general_params["segment_id"]
         area_id = general_params["area_id"]
 
-        feedback.pushInfo("⚙ Procesando archivo especificación de protocolo eMAPS...")
+        feedback.pushInfo("Procesando archivo especificación de protocolo eMAPS...")
         param_file = self.parameterAsFile(parameters, self.DICTIONARY, context)
         variables_especification = EmapsEspecificationProcessing.processCsvParamsFile(param_file)
         print("Num Variables:", len(variables_especification))
-        feedback.pushInfo("✔ No. de Variables: "+str(len(variables_especification)))
+        feedback.pushInfo("No. de Variables: "+str(len(variables_especification)))
 
-        db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
+        #db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
+        db=EmapsDbModel(general_params)
         db.create_tables()
 
         for v in variables_especification:
@@ -232,7 +233,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
                                json.dumps(variable["options"]), variable["max_positive_value"], variable["max_negative_value"])
         db.commit()
 
-        feedback.pushInfo("⚙ Cargando capa de áreas de estudio 🗺...")
+        feedback.pushInfo("Cargando capa de áreas de estudio...")
         areas_geom = self.parameterAsSource(parameters, self.AREAS_GEOM, context)
 
         total = 100.0 / areas_geom.featureCount() if areas_geom.featureCount() else 0
@@ -248,9 +249,9 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
             lista_areas_dict = dict(zip(fieldnames, attributes_replaced_null ))
             lista_areas.append(lista_areas_dict)
             db.insert_area(lista_areas_dict[general_params["area_id"]], lista_areas_dict[general_params["area_name_attribute"]])
-        feedback.pushInfo("✔ Areas de estudio cargadas: "+str(len(lista_areas)))
+        feedback.pushInfo("Areas de estudio cargadas: "+str(len(lista_areas)))
 
-        feedback.pushInfo("⚙ Cargando capa de segmentos de calle 🗺...")
+        feedback.pushInfo("Cargando capa de segmentos de calle...")
         segments_geom = self.parameterAsSource(parameters, self.SEGMENTS_GEOM, context)
         
         total = 100.0 / segments_geom.featureCount() if segments_geom.featureCount() else 0
@@ -273,52 +274,52 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
                                 lista_segmentos_dict[general_params["segment_slope_attribute"]])
             except:
                 raise Exception('ERROR: Verifique que la capa de segmentos tenga los atributos: ['+general_params["segment_length_attribute"]+"], ["+general_params["segment_slope_attribute"]+"]")                                   
-        feedback.pushInfo("✔ Segmentos de calle cargados: "+str(len(lista_segmentos)))
+        feedback.pushInfo("Segmentos de calle cargados: "+str(len(lista_segmentos)))
         
-        feedback.pushInfo("⚙ Cargando evaluaciones de segmentos de calle...")
+        feedback.pushInfo("Cargando evaluaciones de segmentos de calle...")
 
         segments_eval = self.parameterAsSource(parameters, self.SEGMENTS_EVAL, context)
         features_segments_eval = segments_eval.getFeatures()
         fieldnames_segments_eval = [field.name().upper() for field in segments_eval.fields()]
         lista_segments_eval = db.table_from_csv("emaps_segments_eval", fieldnames_segments_eval, 
                                                 features_segments_eval)
-        feedback.pushInfo("✔ Evaluaciones a Segmentos de calle cargadas: "+str(len(lista_segments_eval)))
+        feedback.pushInfo("Evaluaciones a Segmentos de calle cargadas: "+str(len(lista_segments_eval)))
 
-        feedback.pushInfo("⚙ Cargando evaluaciones de lotes...")
+        feedback.pushInfo("⚙Cargando evaluaciones de lotes...")
         parcels_eval = self.parameterAsSource(parameters, self.PARCELS_EVAL, context)
         features_parcels_eval = parcels_eval.getFeatures()
         fieldnames_parcels_eval = [field.name().upper() for field in parcels_eval.fields()]
         lista_parcels_eval = db.table_from_csv("emaps_parcels_eval", fieldnames_parcels_eval, 
                                                features_parcels_eval)
-        feedback.pushInfo("✔ Evaluaciones a Lotes cargadas: "+str(len(lista_parcels_eval)))
+        feedback.pushInfo("Evaluaciones a Lotes cargadas: "+str(len(lista_parcels_eval)))
 
         feedback.setProgress(0)
         db.create_index()
-        feedback.pushInfo("⚙ Calculando eMAPS Score...")
+        feedback.pushInfo("Calculando eMAPS Score...")
         emaps = EmapsScore(feedback, db, general_params, variables_especification)
         emaps.score()
         feedback.setProgress(99)
 
-        feedback.pushInfo("✔ eMAPS Score calculado")
+        feedback.pushInfo("eMAPS Score calculado")
 
-        feedback.pushInfo("⚙ Generando capas eMAPS-Score de salida...")
+        feedback.pushInfo("Generando capas eMAPS-Score de salida...")
         segments_score = emaps.get_segments_output()
         self.dest_segments_score = self.join_layer_list(segments_geom, segment_id, segments_score, "segment_id", 
-                             self.OUTPUT_SEGMENTS_SCORE, parameters, context, feedback )
+                             self.OUTPUT_SEGMENTS_SCORE, parameters, context, feedback)
 
         segments_score_proportion = emaps.get_segments_output_proportion()
         self.dest_segments_score_prop = self.join_layer_list(segments_geom, segment_id, segments_score_proportion, "segment_id", 
-                             self.OUTPUT_SEGMENTS_SCORE_PROPORTION, parameters, context, feedback )
+                             self.OUTPUT_SEGMENTS_SCORE_PROPORTION, parameters, context, feedback)
 
         areas_score = emaps.get_areas_output()
         self.dest_areas_score = self.join_layer_list(areas_geom, area_id, areas_score, "area_id", 
-                             self.OUTPUT_AREAS_SCORE, parameters, context, feedback )
+                             self.OUTPUT_AREAS_SCORE, parameters, context, feedback)
 
         areas_score_proportion = emaps.get_areas_output_proportion()
         self.dest_areas_score_prop = self.join_layer_list(areas_geom, area_id, areas_score_proportion, "area_id", 
-                             self.OUTPUT_AREAS_SCORE_PROPORTION, parameters, context, feedback )
+                             self.OUTPUT_AREAS_SCORE_PROPORTION, parameters, context, feedback)
         
-        feedback.pushInfo("✔ Capas de salida generadas")
+        feedback.pushInfo("Capas de salida generadas")
 
         print("Time:", (time.time()-t))
         return {
@@ -380,7 +381,10 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         if len(sql_list) > 0:
             list_keys = sql_list[0].keys()
         for key in list_keys:
-            new_field = QgsField(key, QVariant.Double)
+            if key in ["PHOTO_1", "PHOTO_2", "PHOTO_3", "PHOTO_4", "PHOTO_5"]:
+                new_field = QgsField(key, QVariant.String)
+            else:    
+                new_field = QgsField(key, QVariant.Double)
             list_fields.append(new_field)
             result_fields.append(new_field)
         (sink, dest_id) = self.parameterAsSink(parameters, output, context, result_fields,

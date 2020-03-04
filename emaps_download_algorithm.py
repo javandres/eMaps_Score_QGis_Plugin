@@ -100,7 +100,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_KPI_LINK,
-                self.tr('🔗 Dirección URL KoboToolBox)'),
+                self.tr('Dirección URL KoboToolBox)'),
                 defaultValue='https://kf.kobotoolbox.org/'
             )
         )
@@ -108,7 +108,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_USER,
-                self.tr('👤 Usuario KoboToolBox'),
+                self.tr('Usuario KoboToolBox'),
                 defaultValue=''
             )
         )
@@ -116,7 +116,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_PASSWORD,
-                self.tr('🔑 Contraseña KoboToolBox'),
+                self.tr('Contraseña KoboToolBox'),
                 defaultValue=''
             )
         )
@@ -124,7 +124,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_FORM_ID,
-                self.tr('🆔 Código del Formulario'),
+                self.tr('Código del Formulario'),
                 defaultValue='aY4FQFrco8HsQDMjGqpCPQ'
             )
         )
@@ -132,7 +132,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_COD_ESTUDIO,
-                self.tr('🔍 Código del Estudio'),
+                self.tr('Código del Estudio'),
                 optional=True
             )
         )
@@ -140,7 +140,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.INPUT_NOMBRE_USUARIO,
-                self.tr('🔍 Nombre de usuario evaluador'),
+                self.tr('Nombre de usuario evaluador'),
                 optional=True
             )
         )
@@ -148,7 +148,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.INPUT_TIPO_LEVANTAMIENTO,
-                "🔍 Tipo de Levantamiento",
+                "Tipo de Levantamiento",
                 self.tipos_levantamiento,
                 defaultValue=0,
                 optional=True
@@ -191,8 +191,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             , "tipo_levantamiento": kobo_tipo_levantamiento
         }
         kobo_api = EmapsDownloadApi(feedback, kpi_url, kobo_user, kobo_password)
-        feedback.pushInfo("⚙ Conectando con servidor KoboToolBox 🌐")
-        feedback.pushInfo("⚙ Descargando datos...")
+        feedback.pushInfo("Conectando con servidor KoboToolBox")
+        feedback.pushInfo("Descargando datos...")
         api_data = kobo_api.get_form_data(params)
 
         segments_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_SEGMENTS, context)
@@ -201,7 +201,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         segments_data = api_data["segments_data"]
         parcels_data = api_data["parcels_data"]
 
-        feedback.pushInfo("⚙ Guardando arvhivo SEGMENTOS (.CSV)  💾...")
+        feedback.pushInfo("Guardando arvhivo SEGMENTOS (.CSV)...")
         csv_columns = api_data["segments_columns"]
         #print(csv_columns)
         csv_file = segments_csv
@@ -214,7 +214,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         except IOError:
             print("I/O error")
 
-        feedback.pushInfo("⚙ Guardando arvhivo LOTES (.CSV)  💾...")
+        feedback.pushInfo("Guardando arvhivo LOTES (.CSV)...")
         csv_columns = api_data["parcels_columns"]
         #print(csv_columns)
         csv_file = parcels_csv
