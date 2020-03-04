@@ -267,12 +267,16 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
             feedback.setProgress(int(current * total))
             lista_segmentos_dict = dict(zip(fieldnames, attributes_replaced_null ))
             lista_segmentos.append(lista_segmentos_dict)
-            db.insert_segment(lista_segmentos_dict[segment_id], lista_segmentos_dict[area_id], 
-                              lista_segmentos_dict[general_params["segment_length_attribute"]], 
-                              lista_segmentos_dict[general_params["segment_slope_attribute"]])
+            try:
+                db.insert_segment(lista_segmentos_dict[segment_id], lista_segmentos_dict[area_id], 
+                                lista_segmentos_dict[general_params["segment_length_attribute"]], 
+                                lista_segmentos_dict[general_params["segment_slope_attribute"]])
+            except:
+                raise Exception('ERROR: Verifique que la capa de segmentos tenga los atributos: ['+general_params["segment_length_attribute"]+"], ["+general_params["segment_slope_attribute"]+"]")                                   
         feedback.pushInfo("✔ Segmentos de calle cargados: "+str(len(lista_segmentos)))
         
         feedback.pushInfo("⚙ Cargando evaluaciones de segmentos de calle...")
+
         segments_eval = self.parameterAsSource(parameters, self.SEGMENTS_EVAL, context)
         features_segments_eval = segments_eval.getFeatures()
         fieldnames_segments_eval = [field.name().upper() for field in segments_eval.fields()]

@@ -91,8 +91,6 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
     dest_areas = None
     tipos_levantamiento = ["Evaluación", "Validación", "Entrenamiento"]
 
-
-
     def initAlgorithm(self, config):
         """
         Here we define the inputs and output of the algorithm, along
@@ -127,7 +125,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_FORM_ID,
                 self.tr('🆔 Código del Formulario'),
-                defaultValue='acqYb67ZLjbQnKXt9HdSn5'
+                defaultValue='aY4FQFrco8HsQDMjGqpCPQ'
             )
         )
 
@@ -146,14 +144,13 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 optional=True
             )
         )
-
         
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.INPUT_TIPO_LEVANTAMIENTO,
                 "🔍 Tipo de Levantamiento",
                 self.tipos_levantamiento,
-                defaultValue=self.tipos_levantamiento[0],
+                defaultValue=0,
                 optional=True
             )
         )
@@ -188,7 +185,6 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         kobo_nombre_usuario = self.parameterAsString(parameters, self.INPUT_NOMBRE_USUARIO, context)
         kobo_tipo_levantamiento = self.tipos_levantamiento[self.parameterAsEnum(parameters, self.INPUT_TIPO_LEVANTAMIENTO, context)]
 
-        print("TIPOLEV:", kobo_tipo_levantamiento, type(kobo_tipo_levantamiento))
         params = {
             "form_id": kobo_form_id,
             "cod_estudio": kobo_cod_estudio,
@@ -208,7 +204,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
 
         feedback.pushInfo("⚙ Guardando arvhivo SEGMENTOS (.CSV)  💾...")
         csv_columns = api_data["segments_columns"]
-        print(csv_columns)
+        #print(csv_columns)
         csv_file = segments_csv
         try:
             with open(csv_file, 'w') as csvfile:
@@ -218,10 +214,10 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                     writer.writerow(data)
         except IOError:
             print("I/O error")
-            
+
         feedback.pushInfo("⚙ Guardando arvhivo LOTES (.CSV)  💾...")
         csv_columns = api_data["parcels_columns"]
-        print(csv_columns)
+        #print(csv_columns)
         csv_file = parcels_csv
         try:
             with open(csv_file, 'w') as csvfile:

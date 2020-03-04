@@ -295,7 +295,10 @@ class EmapsScore():
         return aggregated_vars
 
     def get_segment_variable(self, q_id):
-        var = [{"_ID": row["_ID"], "_INDEX":row["_INDEX"], "AREA_ID":row["AREA_ID"], "SEGMENT_ID":row["SEGMENT_ID"], "length":row["length"], "slope":row["slope"],  "VAR":row[q_id]} for row in self.segments_eval]
+        try:
+            var = [{"_ID": row["_ID"], "_INDEX":row["_INDEX"], "AREA_ID":row["AREA_ID"], "SEGMENT_ID":row["SEGMENT_ID"], "length":row["length"], "slope":row["slope"],  "VAR":row[q_id]} for row in self.segments_eval]
+        except:
+            print("ERROR")    
         return var
 
     def get_parcel_variable(self, q_id):
