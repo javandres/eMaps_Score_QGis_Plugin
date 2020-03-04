@@ -157,7 +157,7 @@ class EmapsDownloadApi():
                     quest_emaps[value.lower()] = row[key]
                 else:
                     if key in ('q_084', 'q_097'):
-                        quest_emaps[value.lower()] = row[key]
+                        quest_emaps[key.lower()] = row[key]
                     elif key == "s2_lote":
                         parcels_dict_list = self.process_parcels(index, row["s2_lote"])
                         res_parcels_data = res_parcels_data + parcels_dict_list
@@ -181,7 +181,7 @@ class EmapsDownloadApi():
             quest_meta_ordered.update(quest_emaps_ordered)
 
             for k in self.columns["columns_segment"].keys():
-                quest_meta_ordered.setdefault(k, None ) 
+                quest_meta_ordered.setdefault(k, "")
 
             res_segments_columns = list(set(res_segments_columns) | set(list(quest_meta_ordered.keys())))
             res_segment_data.append(quest_meta_ordered)
