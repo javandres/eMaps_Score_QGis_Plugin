@@ -219,7 +219,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         #print(csv_columns)
         csv_file = parcels_csv
         try:
-            with open(csv_file, 'w') as csvfile:
+            with open(csv_file, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
                 writer.writeheader()
                 for data in parcels_data:
