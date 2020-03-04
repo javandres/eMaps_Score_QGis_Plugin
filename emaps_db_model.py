@@ -56,7 +56,7 @@ class EmapsDbModel(object):
                     where {}=seval.{} and {}>0
                     ) as NUM_PARCELS_BUILD
                     from (
-                    SELECT {} as _ID, {} as _INDEX, {} as AREA_ID, {} as SEGMENT_ID
+                    SELECT {} as _ID, {} as _INDEX, {} as AREA_ID, {} as SEGMENT_ID, PHOTO_1, PHOTO_2, PHOTO_3,  PHOTO_4,  PHOTO_5
                     from  emaps_segments_eval 
                     where upper({})="{}" and {}=1 and upper({})=upper("{}")
                     ) seval, emaps_segments s
@@ -135,7 +135,27 @@ class EmapsDbModel(object):
                 select segment_id, sum(value) as emaps_score,
 	                   sum(max_positive_value) as emaps_score_max,
                        {} 
-                       date('now') as date
+                       date('now') as date,
+                       ( select PHOTO_1
+                         from emaps_segments_view
+                         where SEGMENT_ID=s.segment_id
+                       ) as PHOTO_1,
+                       ( select PHOTO_2
+                         from emaps_segments_view
+                         where SEGMENT_ID=s.segment_id
+                       ) as PHOTO_2,
+                       ( select PHOTO_3
+                         from emaps_segments_view
+                         where SEGMENT_ID=s.segment_id
+                       ) as PHOTO_3,
+                       ( select PHOTO_4
+                         from emaps_segments_view
+                         where SEGMENT_ID=s.segment_id
+                       ) as PHOTO_4,
+                       ( select PHOTO_5
+                         from emaps_segments_view
+                         where SEGMENT_ID=s.segment_id
+                       ) as PHOTO_5
                 from emaps_segments_score s
                 join emaps_variables v on
                         s.question_id = v.id 
@@ -162,10 +182,30 @@ class EmapsDbModel(object):
                 create view emaps_segments_output_prop as 
                 select segment_id, round( cast (emaps_score as float)  / cast (emaps_score_max as float) , 3)  as emaps_score, 
                 {}
-                date('now') as date
+                date('now') as date,
+                ( select PHOTO_1
+                    from emaps_segments_view
+                    where SEGMENT_ID=emaps_segments_output.segment_id
+                ) as PHOTO_1,
+                ( select PHOTO_2
+                    from emaps_segments_view
+                    where SEGMENT_ID=emaps_segments_output.segment_id
+                ) as PHOTO_2,
+                ( select PHOTO_3
+                    from emaps_segments_view
+                    where SEGMENT_ID=emaps_segments_output.segment_id
+                ) as PHOTO_3,
+                ( select PHOTO_4
+                    from emaps_segments_view
+                    where SEGMENT_ID=emaps_segments_output.segment_id
+                ) as PHOTO_4,
+                ( select PHOTO_5
+                    from emaps_segments_view
+                    where SEGMENT_ID=emaps_segments_output.segment_id
+                ) as PHOTO_5
                 from emaps_segments_output
               """.format(add_sql_proportion)
-        self.connection.execute(sql)    
+        self.connection.execute(sql)
 
         sql = """
                 create view emaps_areas_output_prop as 
@@ -173,8 +213,8 @@ class EmapsDbModel(object):
                 {}
                 date('now') as date
                 from emaps_areas_output
-              """.format(add_sql_proportion)              
-        self.connection.execute(sql)      
+              """.format(add_sql_proportion)
+        self.connection.execute(sql)
 
 
     def insert_variable(self, idx, desc, alias, level, section, scale, subscale, aggregate, aggregate_ref, vtype, required, sum_type, options, max_positive_value, max_negative_value):

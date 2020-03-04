@@ -176,7 +176,6 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         """
         Here is where the pre processing itself takes place.
         """
-        t = time.time()
         kpi_url = self.parameterAsString(parameters, self.INPUT_KPI_LINK, context)
         kobo_user = self.parameterAsString(parameters, self.INPUT_USER, context)
         kobo_password = self.parameterAsString(parameters, self.INPUT_PASSWORD, context)

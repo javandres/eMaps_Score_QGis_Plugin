@@ -57,9 +57,9 @@ class EmapsDownloadApi():
         except requests.exceptions.HTTPError as errh:
             raise Exception(errh)
         except requests.exceptions.ConnectionError as errc:
-            raise Exception(errc )
+            raise Exception(errc)
         except requests.exceptions.Timeout as errt:
-            raise Exception(errt)  
+            raise Exception(errt)
         r.encoding = 'UTF-8'
         data = json.loads(r.text)
         columns_segment = {}
@@ -67,7 +67,6 @@ class EmapsDownloadApi():
         if data["content"]["survey"]:
             parcel_question = False
             for q in data["content"]["survey"]:
-                is_question = False
                 if q["type"] in ["begin_group", "end_group", "acknowledge", "begin_repeat", "end_repeat"]:
                     if parcel_question and q["type"]== "end_repeat":
                         parcel_question = False
@@ -84,13 +83,13 @@ class EmapsDownloadApi():
             return {
                 "columns_segment" : columns_segment,
                 "columns_parcel" : columns_parcel
-            }            
+            }
         else:
-             raise Exception("Error al leer formulario,  por favor revise el ID del formulario")  
+            raise Exception("Error al leer formulario,  por favor revise el ID del formulario")
 
     def get_form_data(self, params):
         self.columns = self.get_form_columns(params["form_id"])
-        print(params)
+
         url = self.kobo_url + 'api/v2/assets/'+params["form_id"]+'/data.json'
         query_params_list = []
         if params["cod_estudio"]:
@@ -115,7 +114,6 @@ class EmapsDownloadApi():
                     query = query + ","
                 query = query + str(q).replace("'", '"')
                 cont = cont + 1
-                
             query = query + ']}'
         else:    
             query = query + "?query="+str(query_params_list[0]).replace("'", '"')
@@ -170,7 +168,9 @@ class EmapsDownloadApi():
                             quest_meta["photo_"+str(at_cont)] = photo["download_large_url"]
                     else:
                         quest_meta[key.lower()] = row[key]
-            
+            if row["_geolocation"]:
+                quest_meta["lat"] = row["_geolocation"][0]
+                quest_meta["lon"] = row["_geolocation"][1]
             quest_emaps_ordered = {}
             quest_meta_ordered = {}
             for i in sorted(quest_emaps.keys()):
@@ -190,55 +190,8 @@ class EmapsDownloadApi():
             "parcels_data": res_parcels_data,
             "segments_columns": sorted(res_segments_columns),
             "parcels_columns": sorted(self.res_parcels_columns)
-        } 
-        
-    def process_segments2(self, results):
-        index = 0
-        res_segment_data = []
-        res_parcels_data = []
-        res_segments_columns = []
-        
-        for row in results:
-            index = index+1
-            keys = row.keys()
-            quest_emaps = {}
-            quest_meta = {}
-            for key in keys:
-                match = re.search(r'/+(\w*)$', key)
-                if match:
-                    value = match.group(1)
-                    quest_emaps[value.lower()] = row[key]
-                else:
-                    if key in ('q_084', 'q_097'):
-                        quest_emaps[value.lower()] = row[key]
-                    elif key == "s2_lote":
-                        parcels_dict_list = self.process_parcels(index, row["s2_lote"])
-                        res_parcels_data = res_parcels_data + parcels_dict_list
-                    elif key == "_attachments":
-                        at_cont = 0
-                        for photo in row["_attachments"]:
-                            at_cont = at_cont+1
-                            quest_meta["photo_"+str(at_cont)] = photo["download_large_url"]
-                    else:
-                        quest_meta[key.lower()] = row[key]
-            
-            quest_emaps_ordered = {}
-            quest_meta_ordered = {}
-            for i in sorted(quest_emaps.keys()):
-                quest_emaps_ordered[i] = quest_emaps[i]
-            for i in sorted(quest_meta.keys()):
-                quest_meta_ordered["_index"] = index
-                quest_meta_ordered[i] = quest_meta[i]
-            quest_meta_ordered.update(quest_emaps_ordered)
-            res_segments_columns = list(set(res_segments_columns) | set(list(quest_meta_ordered.keys())))
-            res_segment_data.append(quest_meta_ordered)
-        return {
-            "segments_data": res_segment_data,
-            "parcels_data": res_parcels_data,
-            "segments_columns": sorted(res_segments_columns),
-            "parcels_columns": sorted(self.res_parcels_columns)
         }
-
+        
     def process_parcels(self, segment_index, parcels_list):
         res_parcels_list = []
         for row in parcels_list:
