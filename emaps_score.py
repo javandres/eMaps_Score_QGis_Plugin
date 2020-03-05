@@ -117,8 +117,8 @@ class EmapsScore():
                 where seval.SEGMENT_ID=s.segment_id  
             '''.format(
                     self.general_params["csv_index"].upper(),
-                    self.general_params["area_id_question"], 
-                    self.general_params["segment_id_question"], 
+                    self.general_params["area_id_question"],
+                    self.general_params["segment_id_question"],
                     self.general_params["evaluation_type_question"],
                     self.general_params["evaluation_type_option"].upper(),
                     self.general_params["segment_exist_question"],

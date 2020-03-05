@@ -56,6 +56,8 @@ from qgis.core import (QgsField,
                        QgsProcessingParameterBoolean,
                        QgsProcessingParameterRasterLayer,
                        QgsProcessingParameterFileDestination,
+                       QgsProcessingParameterVectorDestination,
+                       QgsProcessingOutputVectorLayer,
                        QgsMessageLog,
                        QgsVectorLayer,
                        QgsProcessingUtils,
@@ -113,7 +115,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_USER,
                 self.tr('Usuario KoboToolBox'),
-                defaultValue=''
+                defaultValue='maps'
             )
         )
 
@@ -121,7 +123,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_PASSWORD,
                 self.tr('Contraseña KoboToolBox'),
-                defaultValue=''
+                defaultValue='maps_2018'
             )
         )
 
@@ -137,7 +139,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_COD_ESTUDIO,
                 self.tr('Código del Estudio'),
-                optional=True
+                optional=True,
+                defaultValue='cepra_res_2020_cue'
             )
         )
 
@@ -167,19 +170,23 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 allowMultiple=False,
                 defaultValue=1))
 
-        self.addParameter(
-            QgsProcessingParameterFileDestination(
-                self.OUTPUT_SEGMENTS,
-                self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
-                'CSV files (*.csv)',
-            )
-        )
+        # self.addOutput(QgsProcessingOutputVectorLayer(self.OUTPUT_SEGMENTS, self.tr('Selected (attribute)')))
+
+        # self.addOutput(QgsProcessingOutputVectorLayer(self.OUTPUT_PARCELS, self.tr('Selected (attribute)')))
 
         self.addParameter(
-            QgsProcessingParameterFileDestination(
+            QgsProcessingParameterVectorDestination(
+                self.OUTPUT_SEGMENTS,
+                self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
+                type=QgsProcessing.TypeFile 
+            )
+        )
+#default = " 'CSV files (*.csv)',"  QgsProcessingOutputVectorLayer
+        self.addParameter(
+            QgsProcessingParameterVectorDestination(
                 self.OUTPUT_PARCELS,
                 self.tr('OUTPUT: Tabla de evaluación de lotes .CSV'),
-                'CSV files (*.csv)'
+                type=QgsProcessing.TypeFile 
             )
         )
 
@@ -209,15 +216,14 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         feedback.pushInfo("Descargando datos...")
         api_data = kobo_api.get_form_data(params)
 
-        segments_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_SEGMENTS, context)
-        parcels_csv = self.parameterAsFileOutput(parameters, self.OUTPUT_PARCELS, context)
+        segments_csv = self.parameterAsOutputLayer(parameters, self.OUTPUT_SEGMENTS, context)
+        parcels_csv = self.parameterAsOutputLayer(parameters, self.OUTPUT_PARCELS, context)
 
         segments_data = api_data["segments_data"]
         parcels_data = api_data["parcels_data"]
 
         feedback.pushInfo("Guardando arvhivo SEGMENTOS (.CSV)...")
         csv_columns = api_data["segments_columns"]
-        #print(csv_columns)
         csv_file = segments_csv
         try:
             with open(csv_file, 'w', newline='') as csvfile:
@@ -228,9 +234,11 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         except IOError:
             print("I/O error")
 
+        csv_layer = QgsVectorLayer(csv_file, 'Segmentos', 'delimitedtext')
+        #QgsProject.instance().addMapLayer(csv_layer)
+
         feedback.pushInfo("Guardando arvhivo LOTES (.CSV)...")
         csv_columns = api_data["parcels_columns"]
-        #print(csv_columns)
         csv_file = parcels_csv
         try:
             with open(csv_file, 'w', newline='') as csvfile:

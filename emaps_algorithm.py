@@ -126,21 +126,38 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
             )
         )
 
+        # self.addParameter(
+        #     QgsProcessingParameterFile(
+        #         name=self.SEGMENTS_EVAL,
+        #         description=self.tr('Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+        #         extension="csv",
+        #         optional=False,
+        #     )
+        # )
+
+
+        # self.addParameter(
+        #     QgsProcessingParameterFile(
+        #         name=self.PARCELS_EVAL,
+        #         description=self.tr('Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+        #         extension="csv",
+        #         optional=False,
+        #     )
+        # )
+
         self.addParameter(
-            QgsProcessingParameterFile(
-                name=self.SEGMENTS_EVAL,
-                description=self.tr('Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
-                extension="csv",
-                optional=False,
+            QgsProcessingParameterFeatureSource(
+                self.SEGMENTS_EVAL,
+                self.tr('Segments Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                [QgsProcessing.TypeVector ]
             )
         )
 
         self.addParameter(
-            QgsProcessingParameterFile(
-                name=self.PARCELS_EVAL,
-                description=self.tr('Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
-                extension="csv",
-                optional=False,
+            QgsProcessingParameterFeatureSource(
+                self.PARCELS_EVAL,
+                self.tr('Parcels Evaluation \n(csv file downloaded from the KoboToolbox plaform for the corresponding version)'),
+                [QgsProcessing.TypeVector ]
             )
         )
 
@@ -221,8 +238,8 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         print("Num Variables:", len(variables_especification))
         feedback.pushInfo("No. de Variables: "+str(len(variables_especification)))
 
-        #db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
-        db=EmapsDbModel(general_params)
+        db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
+        #db=EmapsDbModel(general_params)
         db.create_tables()
 
         for v in variables_especification:

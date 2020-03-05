@@ -240,7 +240,6 @@ class EmapsDbModel(object):
         for field in fields:
             new_field=field.strip()
             match = re.search(r"^\w+", new_field)
-            
             if match:
                 new_field = match.group()
             fieldset.append("'{0}' {1}".format(new_field, 'TEXT'))
