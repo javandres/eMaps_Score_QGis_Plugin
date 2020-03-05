@@ -236,8 +236,10 @@ class EmapsDbModel(object):
     def table_from_csv(self, table_name, fields, features):
         column_mask = ['?' for number in range(len(fields))]
         fieldset = []
+        have_photos_fields = False
         for field in fields:
             fieldset.append("'{0}' {1}".format(field.strip(), 'TEXT'))
+
         if len(fieldset) > 0:
             query = "CREATE TABLE IF NOT EXISTS {0} ({1})".format(table_name, ", ".join(fieldset))
         self.connection.execute(query)
@@ -250,6 +252,16 @@ class EmapsDbModel(object):
             list_res.append(dictionary_reg)
             self.connection.execute("INSERT INTO "+table_name+" VALUES("+", ".join(column_mask)+")", tuple(attributes))
         self.connection.commit()
+
+        if table_name == "emaps_segments_eval":    
+            for x in range(1,6):
+                column = "'PHOTO_"+str(x)+ "' TEXT"
+                try:
+                    self.connection.execute("ALTER TABLE " + table_name + " ADD COLUMN "+column+" default null")
+                    self.connection.commit()
+                except:
+                    pass
+            
         return list_res
 
     def insert_segment_score(self, id, index, area_id, segment_id, question_id, question_qid, answer, value, aggregated):

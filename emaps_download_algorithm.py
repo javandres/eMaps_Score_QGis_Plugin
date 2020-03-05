@@ -53,6 +53,7 @@ from qgis.core import (QgsField,
                        QgsProcessingParameterAuthConfig,
                        QgsProcessingFeedback,
                        QgsProcessingParameterEnum,
+                       QgsProcessingParameterBoolean,
                        QgsProcessingParameterRasterLayer,
                        QgsProcessingParameterFileDestination,
                        QgsMessageLog,
@@ -85,7 +86,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
     INPUT_FORM_ID = 'INPUT_FORM_ID'
     INPUT_COD_ESTUDIO = 'INPUT_COD_ESTUDIO'
     INPUT_NOMBRE_USUARIO = 'INPUT_NOMBRE_USUARIO'
-    INPUT_TIPO_LEVANTAMIENTO = 'TIPO_LEVANTAMIENTO'
+    INPUT_TIPO_LEVANTAMIENTO = 'INPUT_TIPO_LEVANTAMIENTO'
+    INPUT_TITLE = 'INPUT_TITLE'
     
     dest_segments = None
     dest_areas = None
@@ -145,22 +147,24 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             )
         )
         
-        self.addParameter(
-            QgsProcessingParameterEnum(
-                self.INPUT_TIPO_LEVANTAMIENTO,
-                "Tipo de Levantamiento",
-                self.tipos_levantamiento,
-                defaultValue=0,
-                optional=True
-            )
-        )
+        tipo_lev_param = QgsProcessingParameterEnum(self.INPUT_TIPO_LEVANTAMIENTO,
+                                               self.tr('Tipo de Levantamiento'),
+                                               options=self.tipos_levantamiento,
+                                               allowMultiple=True, defaultValue=[0])
+        tipo_lev_param.setMetadata({
+            'widget_wrapper': {
+                'class': 'processing.gui.wrappers.EnumWidgetWrapper',
+                'useCheckBoxes': True,
+                'columns': 3}})
+        self.addParameter(tipo_lev_param)
+
+        self.addParameter(QgsProcessingParameterEnum(self.INPUT_TITLE, 'Cabecera', options=['Código de Preguntas','Etiquetas','Grupo+Código'], allowMultiple=False, defaultValue=None))
 
         self.addParameter(
             QgsProcessingParameterFileDestination(
                 self.OUTPUT_SEGMENTS,
                 self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
                 'CSV files (*.csv)',
-                
             )
         )
 
@@ -182,7 +186,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         kobo_form_id = self.parameterAsString(parameters, self.INPUT_FORM_ID, context)
         kobo_cod_estudio = self.parameterAsString(parameters, self.INPUT_COD_ESTUDIO, context)
         kobo_nombre_usuario = self.parameterAsString(parameters, self.INPUT_NOMBRE_USUARIO, context)
-        kobo_tipo_levantamiento = self.tipos_levantamiento[self.parameterAsEnum(parameters, self.INPUT_TIPO_LEVANTAMIENTO, context)]
+        kobo_tipo_levantamiento = [self.tipos_levantamiento[i] for i in
+                        self.parameterAsEnums(parameters, self.INPUT_TIPO_LEVANTAMIENTO, context)]
 
         params = {
             "form_id": kobo_form_id,

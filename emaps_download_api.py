@@ -80,6 +80,11 @@ class EmapsDownloadApi():
                         columns_parcel[q["name"]] = label
                     else:
                         columns_segment[q["name"]] = label
+            columns_segment["photo_1"] = ""
+            columns_segment["photo_2"] = ""
+            columns_segment["photo_3"] = ""
+            columns_segment["photo_4"] = ""
+            columns_segment["photo_5"] = ""
             return {
                 "columns_segment" : columns_segment,
                 "columns_parcel" : columns_parcel
@@ -97,14 +102,25 @@ class EmapsDownloadApi():
         if params["nombre_usuario"]:
             query_params_list.append({"metadatos_ini/m_001":params["nombre_usuario"]})
         if params["tipo_levantamiento"]:
-            value = ""
-            if params["tipo_levantamiento"] == "Evaluación":
-                value = "a"
-            elif params["tipo_levantamiento"] == "Validación":
-                value = "b"
-            elif params["tipo_levantamiento"] == "Entrenamiento":
-                value = "c"
-            query_params_list.append({"metadatos_ini/m_003":value})
+            tipo_evaluacion = []
+            for tipo in params["tipo_levantamiento"]:
+                value = ""
+                if tipo == "Evaluación":
+                    value = "a"
+                elif tipo == "Validación":
+                    value = "b"
+                elif tipo == "Entrenamiento":
+                    value = "c"
+                tipo_evaluacion.append(value)    
+            query_tipo_evaluacion = []    
+            if(len(tipo_evaluacion)==1):    
+                query_params_list.append({"metadatos_ini/m_003":tipo_evaluacion[0]})
+            else:
+                query_tipo_evaluacion = {}
+                query_tipo_evaluacion["$or"]=[]
+                for q in tipo_evaluacion:
+                    query_tipo_evaluacion["$or"].append({"metadatos_ini/m_003":q})
+                query_params_list.append(query_tipo_evaluacion)        
         query = ""
         if len(query_params_list) >= 2:
             query = '?query={"$and":['
@@ -165,7 +181,7 @@ class EmapsDownloadApi():
                         at_cont = 0
                         for photo in row["_attachments"]:
                             at_cont = at_cont+1
-                            quest_meta["photo_"+str(at_cont)] = photo["download_large_url"]
+                            quest_emaps["photo_"+str(at_cont)] = photo["download_large_url"]
                     else:
                         quest_meta[key.lower()] = row[key]
             if row["_geolocation"]:
