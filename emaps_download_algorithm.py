@@ -161,11 +161,11 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(tipo_lev_param)
 
         self.addParameter(QgsProcessingParameterEnum(
-                self.INPUT_TITLE, 
-                'Cabecera', 
-                options=self.titles_type, 
-                allowMultiple=False, 
-                defaultValue=0))
+                self.INPUT_TITLE,
+                'Cabecera',
+                options=self.titles_type,
+                allowMultiple=False,
+                defaultValue=1))
 
         self.addParameter(
             QgsProcessingParameterFileDestination(

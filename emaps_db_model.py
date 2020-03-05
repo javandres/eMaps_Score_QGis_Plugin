@@ -237,7 +237,6 @@ class EmapsDbModel(object):
     def table_from_csv(self, table_name, fields, features):
         column_mask = ['?' for number in range(len(fields))]
         fieldset = []
-        have_photos_fields = False
         for field in fields:
             new_field=field.strip()
             match = re.search(r"^\w+", new_field)
