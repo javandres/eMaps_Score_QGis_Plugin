@@ -65,6 +65,7 @@ from qgis.core import (QgsField,
 import processing
 from processing.core.Processing import Processing
 from .emaps_download_api import EmapsDownloadApi
+from .constants import *
 
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
@@ -91,7 +92,8 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
     
     dest_segments = None
     dest_areas = None
-    tipos_levantamiento = ["Evaluación", "Validación", "Entrenamiento"]
+    tipos_levantamiento = list(TIPOS_LEVANTAMIENTO.keys())
+    titles_type = list(TIPOS_TITULO.keys())
 
     def initAlgorithm(self, config):
         """
@@ -158,7 +160,12 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 'columns': 3}})
         self.addParameter(tipo_lev_param)
 
-        self.addParameter(QgsProcessingParameterEnum(self.INPUT_TITLE, 'Cabecera', options=['Código de Preguntas','Etiquetas','Grupo+Código'], allowMultiple=False, defaultValue=None))
+        self.addParameter(QgsProcessingParameterEnum(
+                self.INPUT_TITLE, 
+                'Cabecera', 
+                options=self.titles_type, 
+                allowMultiple=False, 
+                defaultValue=0))
 
         self.addParameter(
             QgsProcessingParameterFileDestination(
@@ -188,12 +195,14 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         kobo_nombre_usuario = self.parameterAsString(parameters, self.INPUT_NOMBRE_USUARIO, context)
         kobo_tipo_levantamiento = [self.tipos_levantamiento[i] for i in
                         self.parameterAsEnums(parameters, self.INPUT_TIPO_LEVANTAMIENTO, context)]
+        kobo_title_type = self.titles_type[int(self.parameterAsString(parameters, self.INPUT_TITLE, context))]
 
         params = {
             "form_id": kobo_form_id,
             "cod_estudio": kobo_cod_estudio,
-            "nombre_usuario": kobo_nombre_usuario
-            , "tipo_levantamiento": kobo_tipo_levantamiento
+            "nombre_usuario": kobo_nombre_usuario,
+            "tipo_levantamiento": kobo_tipo_levantamiento,
+            "title_type": kobo_title_type
         }
         kobo_api = EmapsDownloadApi(feedback, kpi_url, kobo_user, kobo_password)
         feedback.pushInfo("Conectando con servidor KoboToolBox")

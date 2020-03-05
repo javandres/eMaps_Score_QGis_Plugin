@@ -80,11 +80,11 @@ class EmapsDownloadApi():
                         columns_parcel[q["name"]] = label
                     else:
                         columns_segment[q["name"]] = label
-            columns_segment["photo_1"] = ""
-            columns_segment["photo_2"] = ""
-            columns_segment["photo_3"] = ""
-            columns_segment["photo_4"] = ""
-            columns_segment["photo_5"] = ""
+            columns_segment["photo_1"] = "photo_1"
+            columns_segment["photo_2"] = "photo_2"
+            columns_segment["photo_3"] = "photo_3"
+            columns_segment["photo_4"] = "photo_4"
+            columns_segment["photo_5"] = "photo_5"
             return {
                 "columns_segment" : columns_segment,
                 "columns_parcel" : columns_parcel
@@ -104,13 +104,7 @@ class EmapsDownloadApi():
         if params["tipo_levantamiento"]:
             tipo_evaluacion = []
             for tipo in params["tipo_levantamiento"]:
-                value = ""
-                if tipo == "Evaluación":
-                    value = "a"
-                elif tipo == "Validación":
-                    value = "b"
-                elif tipo == "Entrenamiento":
-                    value = "c"
+                value = TIPOS_LEVANTAMIENTO[tipo]
                 tipo_evaluacion.append(value)    
             query_tipo_evaluacion = []    
             if(len(tipo_evaluacion)==1):    
@@ -151,12 +145,12 @@ class EmapsDownloadApi():
         data = json.loads(r.text)
         if data["results"]:
             self.feedback.pushInfo("Se han encontrado: "+ str(len(data["results"])) + " registros")
-            res_data = self.process_segments(data["results"])
+            res_data = self.process_segments(data["results"], params)
             return res_data
         else:
             raise Exception("No se encontraron registros para los parámetros ingresados!")      
         
-    def process_segments(self, results):        
+    def process_segments(self, results, params):
         index = 0
         res_segment_data = []
         res_parcels_data = []
@@ -201,13 +195,70 @@ class EmapsDownloadApi():
 
             res_segments_columns = list(set(res_segments_columns) | set(list(quest_meta_ordered.keys())))
             res_segment_data.append(quest_meta_ordered)
-        return {
-            "segments_data": res_segment_data,
-            "parcels_data": res_parcels_data,
-            "segments_columns": sorted(res_segments_columns),
-            "parcels_columns": sorted(self.res_parcels_columns)
-        }
-        
+
+        results = self.process_column_titles(params["title_type"], res_segment_data, sorted(res_segments_columns), res_parcels_data, sorted(self.res_parcels_columns))
+        return results
+
+    def process_column_titles(self, title_type, segments_data, segments_columns, parcels_data, parcel_columns):
+        if TIPOS_TITULO[title_type] == "cod":
+            return {
+                "segments_data": segments_data,
+                "parcels_data": parcels_data,
+                "segments_columns": segments_columns,
+                "parcels_columns": parcel_columns
+            }
+        else:
+            res_segment_data = []
+            res_segments_columns = []
+            for row in segments_data:
+                new_row = {}
+                keys = row.keys()
+                for key in keys:
+                    if key in  self.columns["columns_segment"]:
+                        if not self.columns["columns_segment"][key] == "":
+                            new_key = self.columns["columns_segment"][key].upper()
+                            if new_key.startswith(key.upper()):
+                                new_key = new_key.replace(key.upper(), "")
+                            new_key = key.upper() + " " + new_key
+                            new_row[new_key] = row[key]
+                        else:
+                            new_row[key] = row[key]
+                    else:
+                        new_row[key] = row[key]
+                res_segment_data.append(new_row)
+                res_segments_columns = list(set(res_segments_columns) | set(list(new_row.keys())))  
+
+            res_parcels_data = []
+            res_parcels_columns = []
+            for row in parcels_data:
+                new_row = {}
+                keys = row.keys()
+                for key in keys:
+                    if key in  self.columns["columns_parcel"]:
+                        if not self.columns["columns_parcel"][key] == "":
+                            new_key = self.columns["columns_parcel"][key].upper()
+                            if new_key.startswith(key.upper()):
+                                new_key = new_key.replace(key.upper(), "")
+                            new_key = key.upper() + " " + new_key
+                            new_row[new_key] = row[key]
+                        else:
+                            new_row[key] = row[key]
+                    else:
+                        new_row[key] = row[key]
+                res_parcels_data.append(new_row)
+                res_parcels_columns = list(set(res_parcels_columns) | set(list(new_row.keys())))      
+
+            return {
+                "segments_data": res_segment_data,
+                "parcels_data": res_parcels_data,
+                "segments_columns": sorted(res_segments_columns),
+                "parcels_columns": sorted(res_parcels_columns)
+            }                
+
+
+
+
+
     def process_parcels(self, segment_index, parcels_list):
         res_parcels_list = []
         for row in parcels_list:

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sqlite3
+import re
 from sqlite3 import Error
 from contextlib import contextmanager
 
@@ -238,7 +239,12 @@ class EmapsDbModel(object):
         fieldset = []
         have_photos_fields = False
         for field in fields:
-            fieldset.append("'{0}' {1}".format(field.strip(), 'TEXT'))
+            new_field=field.strip()
+            match = re.search(r"^\w+", new_field)
+            
+            if match:
+                new_field = match.group()
+            fieldset.append("'{0}' {1}".format(new_field, 'TEXT'))
 
         if len(fieldset) > 0:
             query = "CREATE TABLE IF NOT EXISTS {0} ({1})".format(table_name, ", ".join(fieldset))
