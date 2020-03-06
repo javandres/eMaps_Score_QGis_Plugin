@@ -118,7 +118,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_USER,
                 self.tr('Usuario KoboToolBox'),
-                defaultValue='maps'
+                defaultValue=''
             )
         )
 
@@ -126,7 +126,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterString(
                 self.INPUT_PASSWORD,
                 self.tr('Contraseña KoboToolBox'),
-                defaultValue='maps_2018'
+                defaultValue=''
             )
         )
 
@@ -143,7 +143,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 self.INPUT_COD_ESTUDIO,
                 self.tr('Código del Estudio'),
                 optional=True,
-                defaultValue='cepra_res_2020_cue'
+                defaultValue=''
             )
         )
 
