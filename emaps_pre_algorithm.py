@@ -167,7 +167,10 @@ class EmapsPreprocessingAlgorithm(QgsProcessingAlgorithm):
             feature.setFields(result_z_stats.fields())
             feature.setAttributes(attributes)
             emaps_length = round(geom.length(), 3)
-            emaps_slope = round(abs(feature["z_first"] - feature["z_last"]) / emaps_length, 3)
+            try:
+                emaps_slope = round(abs(feature["z_first"] - feature["z_last"]) / emaps_length, 3)
+            except:
+                emaps_slope = 0     
             feature.setAttribute('emaps_len', emaps_length)
             feature.setAttribute('emaps_slo', emaps_slope)
             result_z_stats.updateFeature(feature)
