@@ -63,7 +63,10 @@ from qgis.core import (QgsField,
                        QgsProcessingUtils,
                        QgsCoordinateReferenceSystem,
                        QgsCoordinateTransform,
-                       QgsPointXY)
+                       QgsPointXY,
+                       QgsWkbTypes,
+                       QgsPoint,
+                       QgsGeometry)
 import processing
 from processing.core.Processing import Processing
 from .emaps_download_api import EmapsDownloadApi
@@ -93,7 +96,7 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
     INPUT_TITLE = 'INPUT_TITLE'
     
     dest_segments = None
-    dest_areas = None
+    dest_parcels = None
     tipos_levantamiento = list(TIPOS_LEVANTAMIENTO.keys())
     titles_type = list(TIPOS_TITULO.keys())
 
@@ -170,23 +173,19 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
                 allowMultiple=False,
                 defaultValue=1))
 
-        # self.addOutput(QgsProcessingOutputVectorLayer(self.OUTPUT_SEGMENTS, self.tr('Selected (attribute)')))
-
-        # self.addOutput(QgsProcessingOutputVectorLayer(self.OUTPUT_PARCELS, self.tr('Selected (attribute)')))
-
         self.addParameter(
-            QgsProcessingParameterVectorDestination(
+            QgsProcessingParameterFeatureSink(
                 self.OUTPUT_SEGMENTS,
-                self.tr('OUTPUT: Tabla de evaluación de segmentos .CSV'),
-                type=QgsProcessing.TypeFile 
+                self.tr('eMAPS: Evaluación de SEGMENTOS'),
+                type=QgsProcessing.TypeFile
             )
         )
-#default = " 'CSV files (*.csv)',"  QgsProcessingOutputVectorLayer
+
         self.addParameter(
-            QgsProcessingParameterVectorDestination(
+            QgsProcessingParameterFeatureSink(
                 self.OUTPUT_PARCELS,
-                self.tr('OUTPUT: Tabla de evaluación de lotes .CSV'),
-                type=QgsProcessing.TypeFile 
+                self.tr('eMAPS: Evaluación de LOTES'),
+                type=QgsProcessing.TypeFile
             )
         )
 
@@ -216,43 +215,38 @@ class EmapsDownloadAlgorithm(QgsProcessingAlgorithm):
         feedback.pushInfo("Descargando datos...")
         api_data = kobo_api.get_form_data(params)
 
-        segments_csv = self.parameterAsOutputLayer(parameters, self.OUTPUT_SEGMENTS, context)
-        parcels_csv = self.parameterAsOutputLayer(parameters, self.OUTPUT_PARCELS, context)
-
-        segments_data = api_data["segments_data"]
-        parcels_data = api_data["parcels_data"]
-
-        feedback.pushInfo("Guardando arvhivo SEGMENTOS (.CSV)...")
-        csv_columns = api_data["segments_columns"]
-        csv_file = segments_csv
-        try:
-            with open(csv_file, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-                writer.writeheader()
-                for data in segments_data:
-                    writer.writerow(data)
-        except IOError:
-            print("I/O error")
-
-        csv_layer = QgsVectorLayer(csv_file, 'Segmentos', 'delimitedtext')
-        #QgsProject.instance().addMapLayer(csv_layer)
-
-        feedback.pushInfo("Guardando arvhivo LOTES (.CSV)...")
-        csv_columns = api_data["parcels_columns"]
-        csv_file = parcels_csv
-        try:
-            with open(csv_file, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-                writer.writeheader()
-                for data in parcels_data:
-                    writer.writerow(data)
-        except IOError:
-            print("I/O error")
-
+        self.dest_segments = self.create_sink_output(api_data["segments_columns"],  api_data["segments_data"],  self.OUTPUT_SEGMENTS, parameters, context, feedback)
+        self.dest_parcels = self.create_sink_output(api_data["parcels_columns"],  api_data["parcels_data"],  self.OUTPUT_PARCELS, parameters, context, feedback)
+        
         return {
-                  self.OUTPUT_SEGMENTS: segments_csv, 
-                  self.OUTPUT_PARCELS: parcels_csv
+                  self.OUTPUT_SEGMENTS: self.dest_segments, 
+                  self.OUTPUT_PARCELS: self.dest_parcels
                }
+
+    def create_sink_output(self, columns, data, output, parameters, context, feedback):
+        fields = QgsFields()
+        for field in columns:
+            fields.append(QgsField(field, QVariant.String))
+        (sink, dest_id) = self.parameterAsSink(
+            parameters,
+            output,
+            context, fields, QgsWkbTypes.Point, QgsCoordinateReferenceSystem(4326) )
+        feature_list = []
+        for row in data:
+            if feedback.isCanceled():
+                break
+            feature = QgsFeature()
+            feature.setFields(fields)
+            for field in fields:
+                try:
+                    feature[field.name()] = row[field.name()]
+                except:
+                    pass
+            if "lat" in row and "lon" in row and row["lat"] and row["lon"]:
+                    feature.setGeometry(QgsPoint(QgsPointXY(row["lon"], row["lat"])))
+            feature_list.append(feature)
+        sink.addFeatures(feature_list, QgsFeatureSink.FastInsert)
+        return dest_id
 
     def name(self):
         """
