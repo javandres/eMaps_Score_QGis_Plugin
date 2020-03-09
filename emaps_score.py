@@ -112,6 +112,7 @@ class EmapsScore():
                     SELECT s.{csv_index} as SEGMENT_INDEX, s.{area_id_question} as AREA_ID, s.{segment_id_question} as SEGMENT_ID, p.*
                     from  emaps_segments_eval s, emaps_parcels_eval p , ( select max({csv_id}) as UID
 								from emaps_segments_eval
+                                where upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
 								group by {segment_id_question}
 							   ) as segments_eval_cleaned
                     where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
@@ -142,6 +143,7 @@ class EmapsScore():
                   SELECT {csv_id} as _ID, {csv_index} as _INDEX, {area_id_question} as AREA_ID, {segment_id_question} as SEGMENT_ID, emaps_segments_eval.*
                   from  emaps_segments_eval, ( select max({csv_id}) as UID
 								from emaps_segments_eval
+                                where upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
 								group by {segment_id_question}
 							   ) as segments_eval_cleaned	
                   where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")

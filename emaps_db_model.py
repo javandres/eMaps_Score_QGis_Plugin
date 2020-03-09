@@ -60,6 +60,7 @@ class EmapsDbModel(object):
                     SELECT {csv_id} as _ID, {csv_index} as _INDEX, {area_id_question} as AREA_ID, {segment_id_question} as SEGMENT_ID, PHOTO_1, PHOTO_2, PHOTO_3,  PHOTO_4,  PHOTO_5
                     from  emaps_segments_eval,  ( select max({csv_id}) as UID
 								from emaps_segments_eval
+                                where upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}") 
 								group by {segment_id_question}
 							   ) as segments_eval_cleaned	 
                     where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
