@@ -50,33 +50,34 @@ class EmapsDbModel(object):
                     select seval.*, s.length as LENGTH, s.slope as SLOPE, 
                     ( select  count(*)
                     from emaps_parcels_eval
-                    where {}=seval.{}
+                    where {parcel_parent_index}=seval.{csv_index}
                     ) as NUM_PARCELS,
                     ( select  count(*)
                     from emaps_parcels_eval
-                    where {}=seval.{} and {}>0
+                    where {parcel_parent_index}=seval.{csv_index} and {parcel_build_question}>0
                     ) as NUM_PARCELS_BUILD
                     from (
-                    SELECT {} as _ID, {} as _INDEX, {} as AREA_ID, {} as SEGMENT_ID, PHOTO_1, PHOTO_2, PHOTO_3,  PHOTO_4,  PHOTO_5
-                    from  emaps_segments_eval 
-                    where upper({})="{}" and {}=1 and upper({})=upper("{}")
+                    SELECT {csv_id} as _ID, {csv_index} as _INDEX, {area_id_question} as AREA_ID, {segment_id_question} as SEGMENT_ID, PHOTO_1, PHOTO_2, PHOTO_3,  PHOTO_4,  PHOTO_5
+                    from  emaps_segments_eval,  ( select max({csv_id}) as UID
+								from emaps_segments_eval
+								group by {segment_id_question}
+							   ) as segments_eval_cleaned	 
+                    where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
                     ) seval, emaps_segments s
                     where seval.SEGMENT_ID=s.segment_id
             """.format(
-                        self.general_params["parcel_parent_index"].upper(),
-                        self.general_params["csv_index"].upper(),
-                        self.general_params["parcel_parent_index"].upper(),
-                        self.general_params["csv_index"].upper(),
-                        self.general_params["parcel_build_question"].upper(),
-                        self.general_params["csv_id"].upper(),
-                        self.general_params["csv_index"].upper(),
-                        self.general_params["area_id_question"], 
-                        self.general_params["segment_id_question"], 
-                        self.general_params["evaluation_type_question"],
-                        self.general_params["evaluation_type_option"].upper(),
-                        self.general_params["segment_exist_question"],
-                        self.general_params["evaluation_code_question"].upper(),
-                        self.general_params["evaluation_code"])
+                parcel_parent_index=self.general_params["parcel_parent_index"].upper(), 
+                csv_index=self.general_params["csv_index"].upper(),
+                parcel_build_question=self.general_params["parcel_build_question"].upper(),
+                csv_id=self.general_params["csv_id"].upper(),
+                area_id_question=self.general_params["area_id_question"],
+                segment_id_question=self.general_params["segment_id_question"],
+                evaluation_type_question=self.general_params["evaluation_type_question"],
+                evaluation_type_option=self.general_params["evaluation_type_option"].upper(),
+                segment_exist_question=self.general_params["segment_exist_question"],
+                evaluation_code_question=self.general_params["evaluation_code_question"].upper(),
+                evaluation_code=self.general_params["evaluation_code"]
+                )
         self.connection.execute(sql)
         self.connection.commit()
 

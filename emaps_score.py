@@ -109,23 +109,26 @@ class EmapsScore():
         sql = '''
                 select seval.*, s.length, s.slope
                 from (
-                    SELECT s.{} as SEGMENT_INDEX, s.{} as AREA_ID, s.{} as SEGMENT_ID, p.*
-                    from  emaps_segments_eval s, emaps_parcels_eval p
-                    where upper({})="{}" and {}=1 and upper({})=upper("{}")
-                    and p.{}=s.{}
+                    SELECT s.{csv_index} as SEGMENT_INDEX, s.{area_id_question} as AREA_ID, s.{segment_id_question} as SEGMENT_ID, p.*
+                    from  emaps_segments_eval s, emaps_parcels_eval p , ( select max({csv_id}) as UID
+								from emaps_segments_eval
+								group by {segment_id_question}
+							   ) as segments_eval_cleaned
+                    where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
+                    and p.{parcel_parent_index}=s.{csv_index}
                 ) seval, emaps_segments s
                 where seval.SEGMENT_ID=s.segment_id  
             '''.format(
-                    self.general_params["csv_index"].upper(),
-                    self.general_params["area_id_question"],
-                    self.general_params["segment_id_question"],
-                    self.general_params["evaluation_type_question"],
-                    self.general_params["evaluation_type_option"].upper(),
-                    self.general_params["segment_exist_question"],
-                    self.general_params["evaluation_code_question"].upper(),
-                    self.general_params["evaluation_code"],
-                    self.general_params["parcel_parent_index"].upper(),
-                    self.general_params["csv_index"].upper(),
+                csv_id=self.general_params["csv_id"].upper(),
+                csv_index=self.general_params["csv_index"].upper(),
+                area_id_question=self.general_params["area_id_question"],
+                segment_id_question=self.general_params["segment_id_question"],
+                evaluation_type_question=self.general_params["evaluation_type_question"],
+                evaluation_type_option=self.general_params["evaluation_type_option"].upper(),
+                segment_exist_question=self.general_params["segment_exist_question"],
+                evaluation_code_question=self.general_params["evaluation_code_question"].upper(),
+                evaluation_code=self.general_params["evaluation_code"],
+                parcel_parent_index=self.general_params["parcel_parent_index"].upper()
                 )
         cursor.execute(sql)
         res = cursor.fetchall()
@@ -136,21 +139,24 @@ class EmapsScore():
         sql = '''
                 select seval.*, s.length, s.slope
                 from (
-                  SELECT {} as _ID, {} as _INDEX, {} as AREA_ID, {} as SEGMENT_ID, emaps_segments_eval.*
-                  from  emaps_segments_eval 
-                  where upper({})="{}" and {}=1 and upper({})=upper("{}")
+                  SELECT {csv_id} as _ID, {csv_index} as _INDEX, {area_id_question} as AREA_ID, {segment_id_question} as SEGMENT_ID, emaps_segments_eval.*
+                  from  emaps_segments_eval, ( select max({csv_id}) as UID
+								from emaps_segments_eval
+								group by {segment_id_question}
+							   ) as segments_eval_cleaned	
+                  where _ID = UID and upper({evaluation_type_question})="{evaluation_type_option}" and {segment_exist_question}=1 and upper({evaluation_code_question})=upper("{evaluation_code}")
                 ) seval, emaps_segments s
                 where seval.SEGMENT_ID=s.segment_id  
             '''.format(
-                    self.general_params["csv_id"].upper(),
-                    self.general_params["csv_index"].upper(),
-                    self.general_params["area_id_question"], 
-                    self.general_params["segment_id_question"], 
-                    self.general_params["evaluation_type_question"],
-                    self.general_params["evaluation_type_option"].upper(),
-                    self.general_params["segment_exist_question"],
-                    self.general_params["evaluation_code_question"].upper(),
-                    self.general_params["evaluation_code"]
+                csv_id=self.general_params["csv_id"].upper(),
+                csv_index=self.general_params["csv_index"].upper(),
+                area_id_question=self.general_params["area_id_question"],
+                segment_id_question=self.general_params["segment_id_question"],
+                evaluation_type_question=self.general_params["evaluation_type_question"],
+                evaluation_type_option=self.general_params["evaluation_type_option"].upper(),
+                segment_exist_question=self.general_params["segment_exist_question"],
+                evaluation_code_question=self.general_params["evaluation_code_question"].upper(),
+                evaluation_code=self.general_params["evaluation_code"]
             )
         cursor.execute(sql)
         res = cursor.fetchall()
