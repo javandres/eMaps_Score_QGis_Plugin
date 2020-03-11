@@ -215,7 +215,7 @@ class EmapsScore():
             variable = self.emaps_especification[var["id_qid"]]
             if self.is_parcel_aggregated(variable["type"]):
                 self.process_parcel_aggregated_variable(variable)
-            else:    
+            else:
                 self.process_segment_aggregated_variable(variable)
 
     def process_parcel_aggregated_variable(self, variable):
@@ -225,29 +225,61 @@ class EmapsScore():
             ref_list.append('\"'+ref["qid"]+'\"')
         if ref_list:
             cursor = self.db.connection.cursor()
-            sql = '''
-                select s.*, value, round(  value / NUM_PARCELS, 3)  as PARCELS_PROPORTION,  round( value / NUM_PARCELS_BUILD, 3 ) as PARCELS_BUILD_PROPORTION
-                from emaps_segments_view s left join(
-                    select segment_id, segment_index, cast(sum(value) as real) as value
-                    from emaps_parcels_score
-                    where question_qid in ( {} )
-                    group by segment_id, segment_index
-                ) v on s.segment_id = v.segment_id		
-                '''.format(",".join(ref_list))
-            cursor.execute(sql)
-            segments_var = cursor.fetchall()
-            for s in segments_var:
-                if variable["type"].upper() == PROPORTION_BUILDING:
-                    val = s["PARCELS_BUILD_PROPORTION"]
-                elif variable["type"].upper() == PROPORTION_PARCELS:
-                    val = s["PARCELS_PROPORTION"]
-                elif variable["type"].upper() == NUM_IN_PARCELS:
-                    val = s["value"]
-                new_value = self.process_variable(q=variable, value=val, length=s["length"], slope=s["slope"])
-                self.db.insert_segment_score(id=s["_id"], index=s["_index"], area_id=s["area_id"], segment_id=s["segment_id"], 
-                                             question_id=variable["idx"], question_qid=variable["variable"], answer=val, value=new_value, 
-                                             aggregated=None)
-            self.db.commit()
+            if variable["type"].upper() == SHANNON_INDEX:
+                for segment in self.segments_eval:
+                    sql = '''
+                        select question_qid, sum(value) as value, count(value) as num_parcels
+                        from emaps_parcels_score
+                        where question_qid in ( {} ) and segment_id = {}
+                        group by question_qid
+                    '''.format(",".join(ref_list), segment["segment_id"])
+                    cursor.execute(sql)
+                    parcels_score_list = cursor.fetchall()
+                    sum_uses = 0
+                    num_classes = 0
+                    for parcel_use in parcels_score_list:
+                        sum_uses = sum_uses + parcel_use["value"]
+                        num_classes = num_classes + 1
+                    shannon_index = 0
+                    for parcel_use in parcels_score_list:
+                        try:    
+                            pi = parcel_use["value"] / sum_uses
+                        except:
+                            pi = 0    
+                        if pi:
+                            shannon_index = shannon_index + ( pi * np.log(pi) )
+                    if shannon_index < 0:
+                        shannon_index = shannon_index * -1
+                    new_value = self.process_variable(q=variable, value=shannon_index, length=0, slope=0)
+                    self.db.insert_segment_score(id=segment["_id"], index=segment["_index"], area_id=segment["area_id"], segment_id=segment["segment_id"], 
+                                                question_id=variable["idx"], question_qid=variable["variable"], answer=shannon_index, value=new_value, 
+                                                aggregated=None)
+                self.db.commit()
+            else:    
+                sql = '''
+                    select s.*, value, round(  value / NUM_PARCELS, 3)  as PARCELS_PROPORTION,  round( value / NUM_PARCELS_BUILD, 3 ) as PARCELS_BUILD_PROPORTION
+                    from emaps_segments_view s left join(
+                        select segment_id, segment_index, cast(sum(value) as real) as value
+                        from emaps_parcels_score
+                        where question_qid in ( {} )
+                        group by segment_id, segment_index
+                    ) v on s.segment_id = v.segment_id		
+                    '''.format(",".join(ref_list))
+                cursor.execute(sql)
+                segments_var = cursor.fetchall()
+                for s in segments_var:
+                    if variable["type"].upper() == PROPORTION_BUILDING:
+                        val = s["PARCELS_BUILD_PROPORTION"]
+                    elif variable["type"].upper() == PROPORTION_PARCELS:
+                        val = s["PARCELS_PROPORTION"]
+                    elif variable["type"].upper() == NUM_IN_PARCELS or variable["type"].upper() == SHANNON_INDEX:
+                        val = s["value"]
+                    new_value = self.process_variable(q=variable, value=val, length=s["length"], slope=s["slope"])
+                    self.db.insert_segment_score(id=s["_id"], index=s["_index"], area_id=s["area_id"], segment_id=s["segment_id"], 
+                                                question_id=variable["idx"], question_qid=variable["variable"], answer=val, value=new_value, 
+                                                aggregated=None)
+                self.db.commit()
+
         return True
 
     def process_segment_aggregated_variable(self, variable):
@@ -412,6 +444,6 @@ class EmapsScore():
         return False
 
     def is_parcel_aggregated(self, vtype):
-        if vtype.upper() == PROPORTION_BUILDING or vtype.upper() == PROPORTION_PARCELS or vtype.upper() == NUM_IN_PARCELS:
+        if vtype.upper() == PROPORTION_BUILDING or vtype.upper() == PROPORTION_PARCELS or vtype.upper() == NUM_IN_PARCELS or vtype.upper() == SHANNON_INDEX:
             return True
         return False

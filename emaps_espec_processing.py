@@ -133,7 +133,7 @@ class EmapsEspecificationProcessing():
             dict_res = {
                 option_code : d
             }
-        if(qtype.upper() == "NUMERIC" or qtype.upper() == "SLOPE" or qtype.upper() == PROPORTION_BUILDING or qtype.upper() == PROPORTION_PARCELS or qtype.upper() == NUM_IN_PARCELS ):
+        if(qtype.upper() == "NUMERIC" or qtype.upper() == "SLOPE" or qtype.upper() == PROPORTION_BUILDING or qtype.upper() == PROPORTION_PARCELS or qtype.upper() == NUM_IN_PARCELS or qtype.upper() == SHANNON_INDEX):
             match = re.search(r'((^\(?(,?(>|<|<=|>=)\d+(\.\d+)?){1,}\)?)|(^\(?\"?.+\"?\)?)|(^\(?\*\)?))=-?\d+$', question)
             res_exp = dict()
             if match:
