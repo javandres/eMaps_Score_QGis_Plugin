@@ -178,7 +178,10 @@ class EmapsScore():
                     answer = r["VAR"]
                     if q["type"].lower() == "slope":
                         answer = r["slope"]
-                    new_value = self.process_variable(q=q, value=r["VAR"], length=r["length"], slope=r["slope"])
+                    if(q["condition"] and not self.check_condition(q, r )):
+                        new_value = 0
+                    else:    
+                        new_value = self.process_variable(q=q, value=r["VAR"], length=r["length"], slope=r["slope"])
                     self.db.insert_segment_score(id=r["_ID"], index=r["_INDEX"], area_id=r["AREA_ID"], segment_id=r["SEGMENT_ID"], 
                                                  question_id=q["idx"], question_qid=q_id, answer=answer, value=new_value, 
                                                  aggregated=bool(q["aggregate_ref"]))
@@ -321,7 +324,7 @@ class EmapsScore():
             for s in segments_var:
                 if(variable["condition"] and not self.check_condition(variable, s )):
                     new_value = 0
-                else:    
+                else:
                     new_value = self.process_variable(q=variable, value=s["value"], length=s["length"], slope=s["slope"])
                 self.db.insert_segment_score(id=s["_id"], index=s["_index"], area_id=s["area_id"], segment_id=s["segment_id"], 
                                              question_id=variable["idx"], question_qid=variable["variable"], answer=s["value"], value=new_value, 
