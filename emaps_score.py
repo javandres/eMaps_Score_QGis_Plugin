@@ -34,6 +34,7 @@ import numpy as np
 from sqlite3 import Error
 from .emaps_db_model import EmapsDbModel
 from .constants import *
+import re
 
 class EmapsScore():
     """
@@ -281,10 +282,11 @@ class EmapsScore():
                 self.db.commit()
 
         return True
-
+        
     def process_segment_aggregated_variable(self, variable):
         ref_variables = self.get_aggregated_ref_variables(variable["variable"])
         ref_list = []
+        
         for ref in ref_variables:
             if ref["aggregate"] == "TRUE":
                 variable_ref = self.emaps_especification[ref["id_qid"]]
@@ -317,12 +319,35 @@ class EmapsScore():
             if variable["aggregate_ref"]:
                 aggregated = True
             for s in segments_var:
-                new_value = self.process_variable(q=variable, value=s["value"], length=s["length"], slope=s["slope"])
+                if(variable["condition"] and not self.check_condition(variable, s )):
+                    new_value = 0
+                else:    
+                    new_value = self.process_variable(q=variable, value=s["value"], length=s["length"], slope=s["slope"])
                 self.db.insert_segment_score(id=s["_id"], index=s["_index"], area_id=s["area_id"], segment_id=s["segment_id"], 
                                              question_id=variable["idx"], question_qid=variable["variable"], answer=s["value"], value=new_value, 
                                              aggregated=aggregated)
             self.db.commit()
         return True
+
+    def check_condition(self, variable, segments_var):
+        match = re.search(r'^if\((.*)(>=)(\d*)\)$', variable["condition"].replace(" ", ""))
+        if match:
+            qid = match.group(1)
+            sign = match.group(2)
+            value = match.group(3)
+            cursor = self.db.connection.cursor()
+            sql = '''
+                   select _id
+                   from emaps_segments_score
+                   where _id = {segment_id} and question_qid=='{qid}' and answer {sign} {value}
+                '''.format(
+                    segment_id=segments_var["_id"], 
+                    qid=qid, sign=sign, value=value )
+            cursor.execute(sql)
+            segments_res = cursor.fetchall()
+            if segments_res:
+                return True
+        return False
 
     def get_aggregated_ref_variables(self, vid):
         cursor = self.db.connection.cursor()
@@ -336,13 +361,13 @@ class EmapsScore():
 
     def get_segment_variable(self, q_id):
         try:
-            var = [{"_ID": row["_ID"], "_INDEX":row["_INDEX"], "AREA_ID":row["AREA_ID"], "SEGMENT_ID":row["SEGMENT_ID"], "length":row["length"], "slope":row["slope"],  "VAR":row[q_id]} for row in self.segments_eval]
+            var = [{"_ID": row["_ID"], "_INDEX":row["_INDEX"], "AREA_ID":row["AREA_ID"], "SEGMENT_ID":row["SEGMENT_ID"], "length":row["length"], "slope":row["slope"], "VAR":row[q_id]} for row in self.segments_eval]
         except:
-            print("ERROR")    
+            print("ERROR" )    
         return var
 
     def get_parcel_variable(self, q_id):
-        var = [{"PARCEL_ID": row[self.general_params["parcel_id_question"]], "_INDEX":row[self.general_params["csv_index"].upper()], "_PARENT_INDEX":row[ self.general_params["parcel_parent_index"]], "SEGMENT_ID":row["SEGMENT_ID"], "VAR":row[q_id]} for row in self.parcels_eval]
+        var = [{"PARCEL_ID": row[self.general_params["parcel_id_question"]], "_INDEX":row[self.general_params["csv_index"].upper()], "_PARENT_INDEX":row[self.general_params["parcel_parent_index"]], "SEGMENT_ID":row["SEGMENT_ID"], "VAR":row[q_id]} for row in self.parcels_eval]
         return var
 
     def process_variable(self, q, value, length, slope):

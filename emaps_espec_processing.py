@@ -51,7 +51,7 @@ class EmapsEspecificationProcessing():
             reader = csv.DictReader(csvfile)
             j = 0
             for row in reader:
-                if row["variable"][0:1] == "#":
+                if row["variable"][0:1] == "#" or row["variable"][0:1] == "" or row["required"]=="FALSE":
                     continue
                 values = dict()
                 end_options = False
@@ -61,7 +61,8 @@ class EmapsEspecificationProcessing():
                 max_negative_value = 0
                 while not end_options:
                     try:
-                        if(row["option_"+str(i)]):
+                        val = row["option_"+str(i)].strip()
+                        if(val):
                             quest_option = cls.readQuestion(row["type"], row["option_"+str(i)])
                             d = quest_option["option"]
                             values.update(d)
@@ -92,6 +93,7 @@ class EmapsEspecificationProcessing():
                     "aggregate_ref": row["aggregate_ref"],
                     "type": row["type"],
                     "required": row["required"],
+                    "condition": row["condition"],
                     "sum_type": row["sum_type"],
                     "options" : values,
                     "max_positive_value" : max_positive_value,

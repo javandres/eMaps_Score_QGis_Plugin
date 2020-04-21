@@ -238,15 +238,15 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         print("Num Variables:", len(variables_especification))
         feedback.pushInfo("No. de Variables: "+str(len(variables_especification)))
 
-        #db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
-        db = EmapsDbModel(general_params)
+        db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
+        #db = EmapsDbModel(general_params)
         db.create_tables()
 
         for v in variables_especification:
             variable = variables_especification[v]
             db.insert_variable(variable["variable"], variable["desc"], variable["alias"],
                                variable["level"], variable["section"], variable["scale"], variable["subscale"],
-                               variable["aggregate"], variable["aggregate_ref"], variable["type"], variable["required"], variable["sum_type"], 
+                               variable["aggregate"], variable["aggregate_ref"], variable["type"], variable["required"], variable["condition"], variable["sum_type"], 
                                json.dumps(variable["options"]), variable["max_positive_value"], variable["max_negative_value"])
         db.commit()
 

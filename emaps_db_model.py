@@ -40,7 +40,7 @@ class EmapsDbModel(object):
         self.connection.commit()
 
     def create_tables(self):
-        self.connection.execute("CREATE TABLE emaps_variables(id INTEGER PRIMARY KEY AUTOINCREMENT, qid text,desc text, alias text, level text, section text, scale text, subscale text, aggregate text, aggregate_ref text, type text, required text, sum_type text, options text, max_positive_value text, max_negative_value text)")
+        self.connection.execute("CREATE TABLE emaps_variables(id INTEGER PRIMARY KEY AUTOINCREMENT, qid text,desc text, alias text, level text, section text, scale text, subscale text, aggregate text, aggregate_ref text, type text, required text, condition text, sum_type text, options text, max_positive_value text, max_negative_value text)")
         self.connection.execute("CREATE TABLE emaps_areas(area_id text, name text )")
         self.connection.execute("CREATE TABLE emaps_segments(segment_id text, area_id text, length, slope )")
         self.connection.execute("CREATE TABLE emaps_segments_score( _id integer, _index integer, area_id text, segment_id text, question_id text, question_qid text, answer text, value integer, aggregated bool )")
@@ -220,11 +220,13 @@ class EmapsDbModel(object):
         self.connection.execute(sql)
 
 
-    def insert_variable(self, idx, desc, alias, level, section, scale, subscale, aggregate, aggregate_ref, vtype, required, sum_type, options, max_positive_value, max_negative_value):
+    def insert_variable(self, idx, desc, alias, level, section, scale, subscale, aggregate, aggregate_ref, vtype, required, condition, sum_type, options, max_positive_value, max_negative_value):
         ''' Insert variables record '''
-        entitie = (idx, desc, alias, level, section.strip(), scale.strip(), subscale.strip(), aggregate, aggregate_ref, vtype, required, sum_type, options, max_positive_value, max_negative_value)
-        self.connection.execute('''INSERT INTO emaps_variables(qid, desc, alias, level, section, scale, subscale, aggregate, aggregate_ref, type, required, sum_type, options, max_positive_value, max_negative_value) 
-                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', entitie)
+        if(aggregate==1):
+            aggregate="TRUE"
+        entitie = (idx, desc, alias, level, section.strip(), scale.strip(), subscale.strip(), aggregate, aggregate_ref, vtype, required, condition, sum_type, options, max_positive_value, max_negative_value)
+        self.connection.execute('''INSERT INTO emaps_variables(qid, desc, alias, level, section, scale, subscale, aggregate, aggregate_ref, type, required, condition, sum_type, options, max_positive_value, max_negative_value) 
+                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', entitie)
 
     def insert_segment(self, segment_id, area_id, length, slope):
         ''' Insert segment record '''
