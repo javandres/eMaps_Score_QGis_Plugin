@@ -79,6 +79,9 @@ class EmapsEspecificationProcessing():
                         end_options = True
                     i = i+1
                 new_row = dict()
+                condition = ""
+                if ('condition' in row):
+                    condition = row["condition"]
                 new_row = {
                     "idx": j,
                     "id": str(j)+"|"+row["variable"],
@@ -93,14 +96,13 @@ class EmapsEspecificationProcessing():
                     "aggregate_ref": row["aggregate_ref"],
                     "type": row["type"],
                     "required": row["required"],
-                    "condition": row["condition"],
+                    "condition": condition,
                     "sum_type": row["sum_type"],
                     "options" : values,
                     "max_positive_value" : max_positive_value,
                     "max_negative_value" : max_negative_value
                 }
                 new_dict = {str(j)+"|"+row["variable"] : new_row}
-                #params.update( new_dict )
                 params = dict(params, **new_dict)
         return params
 
