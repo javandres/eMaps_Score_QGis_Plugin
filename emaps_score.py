@@ -421,9 +421,10 @@ class EmapsScore():
         #print("BOOL:",q, value)
         if(value.upper() == "NS_NA" or value is None):
             return 0
-        if str(value) == '1':
+        val = str(value)
+        if val[:1] == '1':
             return q["options"]["True"]["value"]
-        elif str(value) == '0':
+        elif val[:1] == '0':
             return q["options"]["False"]["value"]
         return None
 

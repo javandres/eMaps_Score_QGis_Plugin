@@ -238,7 +238,7 @@ class EmapsAlgorithm(QgsProcessingAlgorithm):
         print("Num Variables:", len(variables_especification))
         feedback.pushInfo("No. de Variables: "+str(len(variables_especification)))
 
-        #db=EmapsDbModel(general_params, r'/home/jagg/apps/ucuenca/emaps/mydatabase.db')
+        #db=EmapsDbModel(general_params, r'/home/jag/apps/ucuenca/mydatabase.db')
         db = EmapsDbModel(general_params)
         db.create_tables()
 
