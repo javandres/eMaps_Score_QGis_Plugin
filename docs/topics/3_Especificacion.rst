@@ -1,7 +1,7 @@
-.. _score:
+.. _especificacion:
 
 =====================================
-5 - Calcular eMAPS Score
+3 - Especificación de Variables eMAPS
 =====================================
 
 en construcción...

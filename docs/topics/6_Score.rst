@@ -1,7 +1,7 @@
-.. _descarga:
+.. _score:
 
 =====================================
-3 - Descarga de Datos
+6 - Calcular eMAPS Score
 =====================================
 
 en construcción...
