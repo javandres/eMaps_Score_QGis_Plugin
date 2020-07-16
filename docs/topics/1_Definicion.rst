@@ -51,6 +51,22 @@ En estos predios se evaluarán los usos del suelo, las fachadas, la tipología y
 Se debe relacionar los predios con el segmento con el que serán evaluados 
 mediante el atributo que definimos como codificación para los segmentos, en nuestro caso "cod_segmento"
 
+Mapas para levantamiento de campo
+---------------------------------
+
+Con la información cartográfica preparada se genera un atlas de trabajo de campo
+que consiste en una hoja de trabajo para cada segmento de calle a evaluar 
+la hoja de trabajo es una composición mapas y contiene lo siguiente:
+
+   - Cabecera con datos de la zona de estudio y el segmento a evaluar
+   - Mapa de la zona de estudio con la identificación del segmento a evaluar
+   - Mapa de referencia del segmento de calle a evaluar  
+   - Mapa a detalle del segmento de calle a evaluar, identificando el sentido, intersección inicial, intersección final, lado izquierdo, lado derecho, predios a evaluar con la codificación     
+
+En la siguiente imagen se muestra un ejemplo de hoja de trabajo para un segmento de calle:
+
+.. image:: img/definicion/hojatrabajo.jpg
+   :width: 600
 
 .. toctree::
    :caption: Contenido
