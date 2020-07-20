@@ -35,9 +35,37 @@ herramienta en ambas versiones al finalizar la capacitación.
 
 Una vez cumplidos los requisitos previos, se procede a organizar a los evaluadores para realizar el levantamiento de información. Se recomienda hacer la evaluación en días laborables y en un horario entre las 10am y las 5pm, puesto que antes y después de estas horas, los locales comerciales, servicios o equipamientos podrían estar cerrados. Se recomienda también realizar un segundo levantamiento de al menos el 30% de segmentos evaluados, con la finalidad de validar los datos levantados. 
 
+Herramienta de Evaluación
+-------------------------
+La herramienta de evaluación consiste en implementar las preguntas del protocole eMAPS.ec
+para que los encuestadores realicen la recolección de datos, puede ser realizado de varias formas, utilizando
+formularios impresos o herramientas tecnológicas. En el presente documento se reralizó mediante la herramienta
+de recolección de datos KoboToolBox, se trata de software libre que permite recoger rápidamente información 
+coniable pensada para su uso en crisis humanitaria (http://www.kobotoolbox.org). que tiene tres componentes.
+
+   -  Aplicación para diseño de fomulario
+   -  Aplicación para recolección de datos con dispositivos móviles y computador
+   -  Agregador y analizador de datos
+
+.. image:: img/levantamiento/kobo1.png
+   :width: 600
+
+Se debe tener especial atención en codificar correctamente las preguntas y las posibles respuestas en correspondencia
+con el protocolo ya que tiene especial reelevancia en el procedimiento de cálculo.
+
+
 Levantamiento de Información
 ----------------------------
+Para La recolección de datos:
 
+1. Descargue e instale la aplicación Ko-BoCollect desde la plataforma Play Store para Android o acceder
+   al enlace web en iOS.
+
+2. Ingrese a la aplicación.
+
+3. Obtenga el formulario desde el servidor de la encuesta, seleccionando la opción “Obtener formulario en blanco”; acceda con la cuenta de KoboToolbox (proporcionada)
+
+4. Elija el formulario del proyecto de estudio.
 
 .. toctree::
    :caption: Contenido
