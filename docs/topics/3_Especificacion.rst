@@ -16,7 +16,7 @@ La estructura del archivo de texto es la siguiente.
 
 .. tabularcolumns:: |p{1cm}|p{7cm}|
 
-.. csv-table:: Lorem Ipsum
+.. csv-table:: Estructura
    :file: _files/emaps.csv
    :header-rows: 1
    :class: longtable
