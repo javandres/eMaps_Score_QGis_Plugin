@@ -18,7 +18,7 @@ preguntas de la encuesta que corresponden a las variables del protocolo eMAPS.ec
 Cada pregunta debe estar correctamente codificada, y mantendrá correspondencia con la codificación
 de las preguntas cuando implementemos la herramienta de evaluación.
 
-Se puede descargar el la guñia del evaluador en el siguiente link: 
+Se puede descargar el la guia del evaluador en :download:`Protocolo eMAPS.ec <./_files/protocolo_eMAPS.pdf>`
 
 Entrenamiento y Certificación
 -----------------------------
